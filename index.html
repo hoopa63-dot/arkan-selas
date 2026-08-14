@@ -12,7 +12,7 @@
         body { background-color: var(--primary-bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 10px; }
         .phone-container { width: 100%; max-width: 380px; background: #ffffff; border-radius: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); padding: 20px; min-height: 600px; position: relative; }
         .hidden { display: none !important; }
-        input, select, button { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; }
+        input, select, button { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
         .primary-btn { background: var(--accent-blue); color: white; border: none; font-weight: bold; cursor: pointer; }
         .back-btn { background: #6c757d; color: white; border: none; }
         .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
@@ -20,6 +20,8 @@
         .card { background: #fff; border: 1px solid #eee; padding: 10px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
         .item-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; background: #f9f9f9; padding: 8px; border-radius: 8px; }
         .item-row input { width: 90px; margin-bottom: 0; text-align: center; }
+        .filter-box { background: #f0f7ff; padding: 10px; border-radius: 10px; margin-bottom: 12px; border: 1px solid #b3e5fc; }
+        .filter-box label { font-size: 12px; font-weight: bold; color: #0277bd; display: block; margin-bottom: 3px; }
     </style>
 </head>
 <body>
@@ -86,10 +88,21 @@
         <button class="back-btn" onclick="goHome()">رجوع</button>
     </div>
 
-    <!-- Admin Reports -->
+    <!-- Admin Reports Screen -->
     <div id="report-screen" class="hidden">
-        <h3>تقارير كل المندوبين (الأدمن)</h3>
-        <div id="reports-content"></div>
+        <h3 style="margin-bottom:10px;">التقارير الشاملة (الأدمن)</h3>
+        
+        <!-- أدوات التصفية -->
+        <div class="filter-box">
+            <label><i class="fa-solid fa-filter"></i> تصفية حسب المندوب:</label>
+            <select id="filter-rep-select" onchange="filterReports()"></select>
+
+            <label style="margin-top:5px;"><i class="fa-solid fa-calendar-days"></i> تصفية حسب التاريخ (اليوم/الشهر/السنة):</label>
+            <input type="date" id="filter-date-input" onchange="filterReports()">
+            <button style="padding:4px; font-size:11px; margin-bottom:0; background:#e0e0e0; border:none; border-radius:4px; cursor:pointer;" onclick="clearDateFilter()">عرض الكل بدون تحديد تاريخ</button>
+        </div>
+
+        <div id="reports-content" style="max-height: 280px; overflow-y: auto; margin-bottom: 10px;"></div>
         <button class="back-btn" onclick="goHome()">رجوع</button>
     </div>
 </div>
@@ -107,7 +120,6 @@
             document.getElementById('home-screen').classList.remove('hidden');
             document.getElementById('welcome-msg').innerText = "مرحباً " + name;
             
-            // إظهار زر تقارير الأدمن إذا كان المستخدم ايهاب العريبي
             if(name === "ايهاب العريبي" || name === "إيهاب العريبي") {
                 document.getElementById('admin-report-btn').classList.remove('hidden');
             }
@@ -145,11 +157,19 @@
             return;
         }
 
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const isoDate = `${year}-${month}-${day}`; // صياغة قياسية YYYY-MM-DD للفلترة
+        const timeStr = now.toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'});
+
         inventoryLogs.push({
             client, 
             rep, 
             details: details.join(' | ') || "لا يوجد كميات", 
-            date: new Date().toLocaleDateString('ar-EG') + ' ' + new Date().toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'})
+            isoDate: isoDate,
+            displayDate: `${day}/${month}/${year} ${timeStr}`
         });
 
         localStorage.setItem('my_logs', JSON.stringify(inventoryLogs));
@@ -162,8 +182,6 @@
         document.getElementById(id).classList.remove('hidden');
         
         const currentRep = localStorage.getItem('currentUser');
-
-        // تصفية العملاء الخاصة بالمندوب الحالي فقط
         const myClients = clients.filter(c => c.rep === currentRep);
 
         if(id === 'inventory-screen') {
@@ -186,14 +204,13 @@
         }
 
         if(id === 'visits-screen') {
-            // تصفية سجل الزيارات والجرد المخصصة للمندوب فقط
             const myLogs = inventoryLogs.filter(l => l.rep === currentRep);
             document.getElementById('visits-list').innerHTML = myLogs.length ? 
                 myLogs.map(l => `
                     <div class="card" style="flex-direction:column; align-items:flex-start;">
                         <div style="display:flex; justify-content:space-between; width:100%;">
                             <strong>${l.client}</strong>
-                            <small style="color:gray;">${l.date}</small>
+                            <small style="color:gray;">${l.displayDate || l.date}</small>
                         </div>
                         <div style="margin-top:5px; font-size:13px; color:#333;">${l.details}</div>
                     </div>
@@ -202,20 +219,50 @@
         }
 
         if(id === 'report-screen') {
-            // تقارير إدارية شاملاً لكافة المندوبين
-            document.getElementById('reports-content').innerHTML = inventoryLogs.length ? 
-                inventoryLogs.map(l => `
-                    <div class="card" style="flex-direction:column; align-items:flex-start;">
-                        <div style="display:flex; justify-content:space-between; width:100%;">
-                            <strong>${l.client}</strong>
-                            <small style="color:gray;">${l.date}</small>
-                        </div>
-                        <small style="color:var(--accent-blue); font-weight:bold;">المندوب: ${l.rep}</small>
-                        <div style="margin-top:5px; font-size:13px; color:#333;">${l.details}</div>
-                    </div>
-                `).join('') :
-                '<p style="text-align:center; color:gray; margin-top:20px;">لا يوجد تقارير مسجلة</p>';
+            // إعداد قائمة المندوبين الفريدة في الفلتر
+            const repsList = [...new Set(inventoryLogs.map(l => l.rep))];
+            let repOptions = '<option value="ALL">جميع المندوبين</option>';
+            repsList.forEach(r => { repOptions += `<option value="${r}">${r}</option>`; });
+            document.getElementById('filter-rep-select').innerHTML = repOptions;
+
+            filterReports();
         }
+    }
+
+    function filterReports() {
+        const selectedRep = document.getElementById('filter-rep-select').value;
+        const selectedDate = document.getElementById('filter-date-input').value;
+
+        let filtered = inventoryLogs;
+
+        if (selectedRep !== 'ALL') {
+            filtered = filtered.filter(l => l.rep === selectedRep);
+        }
+
+        if (selectedDate) {
+            filtered = filtered.filter(l => l.isoDate === selectedDate || (l.date && l.date.includes(selectedDate)));
+        }
+
+        const reportsContainer = document.getElementById('reports-content');
+        if (filtered.length) {
+            reportsContainer.innerHTML = filtered.map(l => `
+                <div class="card" style="flex-direction:column; align-items:flex-start;">
+                    <div style="display:flex; justify-content:space-between; width:100%;">
+                        <strong>${l.client}</strong>
+                        <small style="color:gray;">${l.displayDate || l.date}</small>
+                    </div>
+                    <small style="color:var(--accent-blue); font-weight:bold;">المندوب: ${l.rep}</small>
+                    <div style="margin-top:5px; font-size:13px; color:#333;">${l.details}</div>
+                </div>
+            `).join('');
+        } else {
+            reportsContainer.innerHTML = '<p style="text-align:center; color:gray; margin-top:20px;">لا توجد تقارير مطابقة للفلاتر المحددة</p>';
+        }
+    }
+
+    function clearDateFilter() {
+        document.getElementById('filter-date-input').value = '';
+        filterReports();
     }
 
     function goHome() {
