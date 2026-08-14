@@ -7,24 +7,25 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --primary-bg: #e1f5fe; --accent-blue: #0288d1; --btn-green: #2e7d32; }
+        :root { --primary-bg: #e1f5fe; --accent-blue: #0288d1; }
         * { box-sizing: border-box; font-family: 'Cairo', sans-serif; margin: 0; padding: 0; }
         body { background-color: var(--primary-bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 10px; }
         .phone-container { width: 100%; max-width: 380px; background: #ffffff; border-radius: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); padding: 20px; min-height: 600px; position: relative; }
         .hidden { display: none !important; }
         input, select, button { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; }
         .primary-btn { background: var(--accent-blue); color: white; border: none; font-weight: bold; cursor: pointer; }
-        .back-btn { background: #6c757d; color: white; border: none; margin-top: 10px; }
+        .back-btn { background: #6c757d; color: white; border: none; }
         .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
         .grid-item { background: #f8f9fa; padding: 15px; border-radius: 12px; text-align: center; cursor: pointer; border: 1px solid #eee; }
-        .icon-circle { font-size: 24px; color: var(--accent-blue); margin-bottom: 5px; }
-        .card { background: #fff; border: 1px solid #eee; padding: 10px; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .card { background: #fff; border: 1px solid #eee; padding: 10px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .item-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; background: #f9f9f9; padding: 8px; border-radius: 8px; }
+        .item-row input { width: 90px; margin-bottom: 0; text-align: center; }
     </style>
 </head>
 <body>
 
 <div class="phone-container">
-    <!-- تسجيل الدخول -->
+    <!-- Login -->
     <div id="login-screen">
         <h2 style="text-align: center; margin-bottom: 20px; color: var(--accent-blue);">تسجيل الدخول</h2>
         <input type="text" id="login-name" placeholder="اسم المندوب">
@@ -32,39 +33,56 @@
         <button class="primary-btn" onclick="login()">دخول</button>
     </div>
 
-    <!-- الشاشة الرئيسية -->
+    <!-- Home -->
     <div id="home-screen" class="hidden">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h3 id="welcome-msg"></h3>
-            <i class="fa-solid fa-right-from-bracket" onclick="logout()" style="color:red; cursor:pointer;"></i>
+        <h3 id="welcome-msg" style="text-align:center;"></h3>
+        <div class="grid-container">
+            <div class="grid-item" onclick="openScreen('clients-list-screen')"><i class="fa-solid fa-users"></i><br>العملاء</div>
+            <div class="grid-item" onclick="openScreen('add-client-screen')"><i class="fa-solid fa-user-plus"></i><br>إضافة عميل</div>
+            <div class="grid-item" onclick="openScreen('visits-screen')"><i class="fa-solid fa-clipboard-list"></i><br>سجل الزيارات</div>
+            <div class="grid-item" onclick="openScreen('inventory-screen')"><i class="fa-solid fa-boxes-stacked"></i><br>جرد جديد</div>
+            <div class="grid-item hidden" id="admin-report-btn" onclick="openScreen('report-screen')"><i class="fa-solid fa-chart-line"></i><br>التقارير</div>
         </div>
-        <div class="grid-container" id="menu-grid">
-            <div class="grid-item" onclick="openScreen('clients-screen')"><div class="icon-circle"><i class="fa-solid fa-users"></i></div>العملاء</div>
-            <div class="grid-item" onclick="openScreen('visits-screen')"><div class="icon-circle"><i class="fa-solid fa-clipboard-list"></i></div>سجل الزيارات</div>
-            <div class="grid-item" onclick="openScreen('inventory-screen')"><div class="icon-circle"><i class="fa-solid fa-boxes-stacked"></i></div>الجرد</div>
-            <div class="grid-item" onclick="openScreen('add-product-screen')"><div class="icon-circle"><i class="fa-solid fa-pills"></i></div>إضافة صنف</div>
-            <!-- يظهر للأدمن فقط -->
-            <div class="grid-item hidden" id="admin-report-btn" onclick="openScreen('report-screen')"><div class="icon-circle"><i class="fa-solid fa-chart-line"></i></div>التقارير</div>
-        </div>
+        <button class="back-btn" style="margin-top:20px;" onclick="location.reload()">خروج</button>
     </div>
 
-    <!-- الشاشات الفرعية (مختصرة للأمان) -->
-    <div id="clients-screen" class="hidden">
-        <h3>قائمة العملاء</h3>
-        <div id="clients-list"></div>
+    <!-- Add Client -->
+    <div id="add-client-screen" class="hidden">
+        <h3>إضافة عميل جديد</h3>
+        <input type="text" id="new-client-name" placeholder="اسم العميل">
+        <select id="new-client-type">
+            <option value="صيدلية">صيدلية</option>
+            <option value="شركة">شركة</option>
+            <option value="عيادة">عيادة</option>
+        </select>
+        <button class="primary-btn" onclick="addClient()">حفظ العميل</button>
         <button class="back-btn" onclick="goHome()">رجوع</button>
     </div>
 
+    <!-- Clients List -->
+    <div id="clients-list-screen" class="hidden">
+        <h3>قائمة العملاء</h3>
+        <div id="clients-display-list"></div>
+        <button class="back-btn" onclick="goHome()">رجوع</button>
+    </div>
+
+    <!-- New Inventory Screen -->
+    <div id="inventory-screen" class="hidden">
+        <h3>تسجيل جرد جديد</h3>
+        <label style="font-size:12px; font-weight:bold;">اختر العميل:</label>
+        <select id="inv-client-select"></select>
+
+        <label style="font-size:12px; font-weight:bold; margin-top:5px; display:block;">أدخل الكميات المتوفرة:</label>
+        <div id="products-qty-list" style="max-height: 250px; overflow-y: auto; margin-bottom: 10px;"></div>
+
+        <button class="primary-btn" onclick="saveInventory()">حفظ الجرد</button>
+        <button class="back-btn" onclick="goHome()">رجوع</button>
+    </div>
+    
     <div id="visits-screen" class="hidden">
-        <h3>سجل الزيارات (اضغط على العميل للتفاصيل)</h3>
+        <h3>سجل الزيارات والجرد</h3>
         <div id="visits-list"></div>
         <button class="back-btn" onclick="goHome()">رجوع</button>
-    </div>
-
-    <div id="client-detail-screen" class="hidden">
-        <h3>تفاصيل جرد العميل</h3>
-        <div id="client-detail-content"></div>
-        <button class="back-btn" onclick="openScreen('visits-screen')">رجوع للسجل</button>
     </div>
 
     <div id="report-screen" class="hidden">
@@ -72,76 +90,105 @@
         <div id="reports-content"></div>
         <button class="back-btn" onclick="goHome()">رجوع</button>
     </div>
-
-    <div id="inventory-screen" class="hidden">
-        <h3>تسجيل جرد</h3>
-        <select id="inv-client-select"></select>
-        <button class="primary-btn" onclick="saveInventory()">حفظ الجرد</button>
-        <button class="back-btn" onclick="goHome()">رجوع</button>
-    </div>
-
-    <div id="add-product-screen" class="hidden">
-        <h3>إضافة صنف</h3>
-        <input type="text" id="new-prod" placeholder="اسم الصنف">
-        <button class="primary-btn" onclick="addProduct()">إضافة</button>
-        <button class="back-btn" onclick="goHome()">رجوع</button>
-    </div>
 </div>
 
 <script>
-    let currentUser = null;
-    let inventoryLogs = JSON.parse(localStorage.getItem('arkan_logs')) || [];
+    let clients = JSON.parse(localStorage.getItem('my_clients')) || [{name: "صيدلية الأمل", type: "صيدلية"}];
+    let products = JSON.parse(localStorage.getItem('my_products')) || ["بندول 500 ملجم", "شراب سيكافام", "أوميبرازول 20 ملجم", "Irosky"];
+    let inventoryLogs = JSON.parse(localStorage.getItem('my_logs')) || [];
 
     function login() {
         const name = document.getElementById('login-name').value;
         if(name) {
-            currentUser = name;
+            localStorage.setItem('currentUser', name);
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('home-screen').classList.remove('hidden');
             document.getElementById('welcome-msg').innerText = "مرحباً " + name;
             if(name === "ايهاب العريبي") document.getElementById('admin-report-btn').classList.remove('hidden');
+        }
+    }
+
+    function addClient() {
+        const name = document.getElementById('new-client-name').value;
+        const type = document.getElementById('new-client-type').value;
+        if(name) {
+            clients.push({name, type});
+            localStorage.setItem('my_clients', JSON.stringify(clients));
+            alert("تم حفظ العميل!");
             goHome();
         }
+    }
+
+    function saveInventory() {
+        const client = document.getElementById('inv-client-select').value;
+        const rep = localStorage.getItem('currentUser');
+        let details = [];
+
+        products.forEach((p, idx) => {
+            let qty = document.getElementById(`prod-qty-${idx}`).value || 0;
+            if(qty > 0) {
+                details.push(`${p}: ${qty}`);
+            }
+        });
+
+        if(!client) {
+            alert("يرجى اختيار عميل!");
+            return;
+        }
+
+        inventoryLogs.push({
+            client, 
+            rep, 
+            details: details.join(' | ') || "لا يوجد كميات", 
+            date: new Date().toLocaleDateString('ar-EG') + ' ' + new Date().toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'})
+        });
+
+        localStorage.setItem('my_logs', JSON.stringify(inventoryLogs));
+        alert("تم حفظ الجرد بنجاح!");
+        goHome();
     }
 
     function openScreen(id) {
         document.querySelectorAll('.phone-container > div').forEach(d => d.classList.add('hidden'));
         document.getElementById(id).classList.remove('hidden');
-        if(id === 'visits-screen') renderVisits();
-        if(id === 'report-screen') renderReports();
+        
+        if(id === 'inventory-screen') {
+            document.getElementById('inv-client-select').innerHTML = clients.length ? 
+                clients.map(c => `<option value="${c.name}">${c.name} (${c.type})</option>`).join('') :
+                '<option value="">لا يوجد عملاء مضافين</option>';
+
+            document.getElementById('products-qty-list').innerHTML = products.map((p, idx) => `
+                <div class="item-row">
+                    <span>${p}</span>
+                    <input type="number" id="prod-qty-${idx}" placeholder="0" min="0">
+                </div>
+            `).join('');
+        }
+
+        if(id === 'clients-list-screen') {
+            document.getElementById('clients-display-list').innerHTML = clients.map(c => 
+                `<div class="card"><span>${c.name}</span><small style="color:var(--accent-blue)">(${c.type})</small></div>`
+            ).join('');
+        }
+
+        if(id === 'visits-screen') {
+            document.getElementById('visits-list').innerHTML = inventoryLogs.map(l => `
+                <div class="card" style="flex-direction:column; align-items:flex-start;">
+                    <div style="display:flex; justify-content:space-between; width:100%;">
+                        <strong>${l.client}</strong>
+                        <small style="color:gray;">${l.date}</small>
+                    </div>
+                    <small style="color:var(--accent-blue);">المندوب: ${l.rep}</small>
+                    <div style="margin-top:5px; font-size:13px; color:#333;">${l.details}</div>
+                </div>
+            `).join('');
+        }
     }
 
     function goHome() {
         document.querySelectorAll('.phone-container > div').forEach(d => d.classList.add('hidden'));
         document.getElementById('home-screen').classList.remove('hidden');
     }
-
-    function renderVisits() {
-        const list = document.getElementById('visits-list');
-        list.innerHTML = inventoryLogs.map((log, index) => `
-            <div class="card" onclick="showClientDetail(${index})">
-                <strong>${log.client}</strong> - ${log.rep}
-            </div>
-        `).join('');
-    }
-
-    function showClientDetail(index) {
-        const log = inventoryLogs[index];
-        const container = document.getElementById('client-detail-content');
-        container.innerHTML = `<div class="card"><p>العميل: ${log.client}</p><p>المندوب: ${log.rep}</p><hr><p>الجرد: ${log.details}</p></div>`;
-        openScreen('client-detail-screen');
-    }
-
-    function renderReports() {
-        const content = document.getElementById('reports-content');
-        let reportHtml = "<h4>إجمالي زيارات المندوبين:</h4>";
-        // Logic to group logs by rep name
-        content.innerHTML = reportHtml + "سيتم عرض البيانات هنا...";
-    }
-
-    function logout() { location.reload(); }
-    
-    // (باقي الوظائف مثل saveInventory, addProduct كما كانت مع دمج المتغيرات)
 </script>
 </body>
 </html>
