@@ -73,18 +73,20 @@
         <select id="inv-client-select"></select>
 
         <label style="font-size:12px; font-weight:bold; margin-top:5px; display:block;">أدخل الكميات المتوفرة:</label>
-        <div id="products-qty-list" style="max-height: 250px; overflow-y: auto; margin-bottom: 10px;"></div>
+        <div id="products-qty-list" style="max-height: 280px; overflow-y: auto; margin-bottom: 10px;"></div>
 
         <button class="primary-btn" onclick="saveInventory()">حفظ الجرد</button>
         <button class="back-btn" onclick="goHome()">رجوع</button>
     </div>
     
+    <!-- Visits Log -->
     <div id="visits-screen" class="hidden">
         <h3>سجل الزيارات والجرد</h3>
         <div id="visits-list"></div>
         <button class="back-btn" onclick="goHome()">رجوع</button>
     </div>
 
+    <!-- Admin Reports -->
     <div id="report-screen" class="hidden">
         <h3>تقارير المندوبين</h3>
         <div id="reports-content"></div>
@@ -94,7 +96,8 @@
 
 <script>
     let clients = JSON.parse(localStorage.getItem('my_clients')) || [{name: "صيدلية الأمل", type: "صيدلية"}];
-    let products = JSON.parse(localStorage.getItem('my_products')) || ["بندول 500 ملجم", "شراب سيكافام", "أوميبرازول 20 ملجم", "Irosky"];
+    // الأصناف المحدثة
+    let products = ["Irosky", "Pregna sky", "Ido sky", "Men sky", "Women sky", "D sky", "Calci sky"];
     let inventoryLogs = JSON.parse(localStorage.getItem('my_logs')) || [];
 
     function login() {
@@ -159,7 +162,7 @@
 
             document.getElementById('products-qty-list').innerHTML = products.map((p, idx) => `
                 <div class="item-row">
-                    <span>${p}</span>
+                    <span style="font-weight:bold; font-size:14px;">${p}</span>
                     <input type="number" id="prod-qty-${idx}" placeholder="0" min="0">
                 </div>
             `).join('');
