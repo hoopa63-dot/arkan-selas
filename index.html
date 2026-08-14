@@ -41,7 +41,7 @@
             <div class="grid-item" onclick="openScreen('add-client-screen')"><i class="fa-solid fa-user-plus"></i><br>إضافة عميل</div>
             <div class="grid-item" onclick="openScreen('visits-screen')"><i class="fa-solid fa-clipboard-list"></i><br>سجل الزيارات</div>
             <div class="grid-item" onclick="openScreen('inventory-screen')"><i class="fa-solid fa-boxes-stacked"></i><br>جرد جديد</div>
-            <div class="grid-item hidden" id="admin-report-btn" onclick="openScreen('report-screen')"><i class="fa-solid fa-chart-line"></i><br>التقارير</div>
+            <div class="grid-item hidden" id="admin-report-btn" onclick="openScreen('report-screen')"><i class="fa-solid fa-chart-line"></i><br>التقارير الشاملة</div>
         </div>
         <button class="back-btn" style="margin-top:20px;" onclick="location.reload()">خروج</button>
     </div>
@@ -61,7 +61,7 @@
 
     <!-- Clients List -->
     <div id="clients-list-screen" class="hidden">
-        <h3>قائمة العملاء</h3>
+        <h3>قائمة العملاء الخاصة بي</h3>
         <div id="clients-display-list"></div>
         <button class="back-btn" onclick="goHome()">رجوع</button>
     </div>
@@ -81,43 +81,49 @@
     
     <!-- Visits Log -->
     <div id="visits-screen" class="hidden">
-        <h3>سجل الزيارات والجرد</h3>
+        <h3>سجل زياراتي والجرد</h3>
         <div id="visits-list"></div>
         <button class="back-btn" onclick="goHome()">رجوع</button>
     </div>
 
     <!-- Admin Reports -->
     <div id="report-screen" class="hidden">
-        <h3>تقارير المندوبين</h3>
+        <h3>تقارير كل المندوبين (الأدمن)</h3>
         <div id="reports-content"></div>
         <button class="back-btn" onclick="goHome()">رجوع</button>
     </div>
 </div>
 
 <script>
-    let clients = JSON.parse(localStorage.getItem('my_clients')) || [{name: "صيدلية الأمل", type: "صيدلية"}];
-    // الأصناف المحدثة
+    let clients = JSON.parse(localStorage.getItem('my_clients')) || [];
     let products = ["Irosky", "Pregna sky", "Ido sky", "Men sky", "Women sky", "D sky", "Calci sky"];
     let inventoryLogs = JSON.parse(localStorage.getItem('my_logs')) || [];
 
     function login() {
-        const name = document.getElementById('login-name').value;
+        const name = document.getElementById('login-name').value.trim();
         if(name) {
             localStorage.setItem('currentUser', name);
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('home-screen').classList.remove('hidden');
             document.getElementById('welcome-msg').innerText = "مرحباً " + name;
-            if(name === "ايهاب العريبي") document.getElementById('admin-report-btn').classList.remove('hidden');
+            
+            // إظهار زر تقارير الأدمن إذا كان المستخدم ايهاب العريبي
+            if(name === "ايهاب العريبي" || name === "إيهاب العريبي") {
+                document.getElementById('admin-report-btn').classList.remove('hidden');
+            }
         }
     }
 
     function addClient() {
         const name = document.getElementById('new-client-name').value;
         const type = document.getElementById('new-client-type').value;
+        const rep = localStorage.getItem('currentUser');
+        
         if(name) {
-            clients.push({name, type});
+            clients.push({name, type, rep});
             localStorage.setItem('my_clients', JSON.stringify(clients));
-            alert("تم حفظ العميل!");
+            alert("تم حفظ العميل بنجاح!");
+            document.getElementById('new-client-name').value = '';
             goHome();
         }
     }
@@ -135,7 +141,7 @@
         });
 
         if(!client) {
-            alert("يرجى اختيار عميل!");
+            alert("يرجى اختيار عميل أولاً!");
             return;
         }
 
@@ -155,10 +161,15 @@
         document.querySelectorAll('.phone-container > div').forEach(d => d.classList.add('hidden'));
         document.getElementById(id).classList.remove('hidden');
         
+        const currentRep = localStorage.getItem('currentUser');
+
+        // تصفية العملاء الخاصة بالمندوب الحالي فقط
+        const myClients = clients.filter(c => c.rep === currentRep);
+
         if(id === 'inventory-screen') {
-            document.getElementById('inv-client-select').innerHTML = clients.length ? 
-                clients.map(c => `<option value="${c.name}">${c.name} (${c.type})</option>`).join('') :
-                '<option value="">لا يوجد عملاء مضافين</option>';
+            document.getElementById('inv-client-select').innerHTML = myClients.length ? 
+                myClients.map(c => `<option value="${c.name}">${c.name} (${c.type})</option>`).join('') :
+                '<option value="">لا يوجد عملاء مضافين لك</option>';
 
             document.getElementById('products-qty-list').innerHTML = products.map((p, idx) => `
                 <div class="item-row">
@@ -169,22 +180,41 @@
         }
 
         if(id === 'clients-list-screen') {
-            document.getElementById('clients-display-list').innerHTML = clients.map(c => 
-                `<div class="card"><span>${c.name}</span><small style="color:var(--accent-blue)">(${c.type})</small></div>`
-            ).join('');
+            document.getElementById('clients-display-list').innerHTML = myClients.length ? 
+                myClients.map(c => `<div class="card"><span>${c.name}</span><small style="color:var(--accent-blue)">(${c.type})</small></div>`).join('') :
+                '<p style="text-align:center; color:gray; margin-top:20px;">لا يوجد عملاء مسجلين باسمك</p>';
         }
 
         if(id === 'visits-screen') {
-            document.getElementById('visits-list').innerHTML = inventoryLogs.map(l => `
-                <div class="card" style="flex-direction:column; align-items:flex-start;">
-                    <div style="display:flex; justify-content:space-between; width:100%;">
-                        <strong>${l.client}</strong>
-                        <small style="color:gray;">${l.date}</small>
+            // تصفية سجل الزيارات والجرد المخصصة للمندوب فقط
+            const myLogs = inventoryLogs.filter(l => l.rep === currentRep);
+            document.getElementById('visits-list').innerHTML = myLogs.length ? 
+                myLogs.map(l => `
+                    <div class="card" style="flex-direction:column; align-items:flex-start;">
+                        <div style="display:flex; justify-content:space-between; width:100%;">
+                            <strong>${l.client}</strong>
+                            <small style="color:gray;">${l.date}</small>
+                        </div>
+                        <div style="margin-top:5px; font-size:13px; color:#333;">${l.details}</div>
                     </div>
-                    <small style="color:var(--accent-blue);">المندوب: ${l.rep}</small>
-                    <div style="margin-top:5px; font-size:13px; color:#333;">${l.details}</div>
-                </div>
-            `).join('');
+                `).join('') :
+                '<p style="text-align:center; color:gray; margin-top:20px;">لا يوجد سجل زيارات سابق لك</p>';
+        }
+
+        if(id === 'report-screen') {
+            // تقارير إدارية شاملاً لكافة المندوبين
+            document.getElementById('reports-content').innerHTML = inventoryLogs.length ? 
+                inventoryLogs.map(l => `
+                    <div class="card" style="flex-direction:column; align-items:flex-start;">
+                        <div style="display:flex; justify-content:space-between; width:100%;">
+                            <strong>${l.client}</strong>
+                            <small style="color:gray;">${l.date}</small>
+                        </div>
+                        <small style="color:var(--accent-blue); font-weight:bold;">المندوب: ${l.rep}</small>
+                        <div style="margin-top:5px; font-size:13px; color:#333;">${l.details}</div>
+                    </div>
+                `).join('') :
+                '<p style="text-align:center; color:gray; margin-top:20px;">لا يوجد تقارير مسجلة</p>';
         }
     }
 
