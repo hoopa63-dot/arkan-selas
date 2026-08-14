@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام أركان الدوائية</title>
+    <title>شركة أركان الدوائية</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -12,30 +12,72 @@
         body { background-color: var(--primary-bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 10px; }
         .phone-container { width: 100%; max-width: 380px; background: #ffffff; border-radius: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); padding: 20px; min-height: 600px; position: relative; }
         .hidden { display: none !important; }
-        input, select, button { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
-        .primary-btn { background: var(--accent-blue); color: white; border: none; font-weight: bold; cursor: pointer; }
-        .back-btn { background: #6c757d; color: white; border: none; }
+        input, select, button { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; text-align: right; }
+        
+        /* ضبط خانة التاريخ لمنع انعكاس الحروف */
+        input[type="date"] {
+            direction: ltr !important;
+            text-align: right !important;
+            font-family: inherit;
+        }
+
+        .primary-btn { background: var(--accent-blue); color: white; border: none; font-weight: bold; cursor: pointer; text-align: center; }
+        .back-btn { background: #6c757d; color: white; border: none; text-align: center; }
         .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
         .grid-item { background: #f8f9fa; padding: 15px; border-radius: 12px; text-align: center; cursor: pointer; border: 1px solid #eee; }
         .card { background: #fff; border: 1px solid #eee; padding: 10px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
         .item-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; background: #f9f9f9; padding: 8px; border-radius: 8px; }
         .item-row input { width: 90px; margin-bottom: 0; text-align: center; }
-        .filter-box { background: #f0f7ff; padding: 10px; border-radius: 10px; margin-bottom: 12px; border: 1px solid #b3e5fc; }
-        .filter-box label { font-size: 12px; font-weight: bold; color: #0277bd; display: block; margin-bottom: 3px; }
+        .filter-box { background: #f0f7ff; padding: 12px; border-radius: 10px; margin-bottom: 12px; border: 1px solid #b3e5fc; text-align: right; }
+        .filter-box label { font-size: 13px; font-weight: bold; color: #0277bd; display: block; margin-bottom: 4px; }
+        
+        .date-container {
+            display: flex;
+            align-items: center;
+            background: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 0 10px;
+            margin-bottom: 10px;
+        }
+        .date-container input {
+            border: none;
+            margin-bottom: 0;
+            padding: 10px 0;
+        }
+        .company-header {
+            text-align: center;
+            margin-top: 15px;
+            margin-bottom: 25px;
+        }
+        .company-header h2 {
+            color: var(--accent-blue);
+            font-size: 22px;
+            font-weight: bold;
+        }
+        .company-header p {
+            color: #666;
+            font-size: 14px;
+            margin-top: 2px;
+        }
     </style>
 </head>
 <body>
 
 <div class="phone-container">
-    <!-- Login -->
+    <!-- Login Screen -->
     <div id="login-screen">
-        <h2 style="text-align: center; margin-bottom: 20px; color: var(--accent-blue);">تسجيل الدخول</h2>
+        <div class="company-header">
+            <i class="fa-solid fa-hospital-user" style="font-size: 40px; color: var(--accent-blue); margin-bottom: 8px;"></i>
+            <h2>شركة أركان الدوائية</h2>
+            <p>تسجيل الدخول</p>
+        </div>
         <input type="text" id="login-name" placeholder="اسم المندوب">
         <input type="password" id="login-pass" placeholder="الرقم السري">
         <button class="primary-btn" onclick="login()">دخول</button>
     </div>
 
-    <!-- Home -->
+    <!-- Home Screen -->
     <div id="home-screen" class="hidden">
         <h3 id="welcome-msg" style="text-align:center;"></h3>
         <div class="grid-container">
@@ -48,7 +90,7 @@
         <button class="back-btn" style="margin-top:20px;" onclick="location.reload()">خروج</button>
     </div>
 
-    <!-- Add Client -->
+    <!-- Add Client Screen -->
     <div id="add-client-screen" class="hidden">
         <h3>إضافة عميل جديد</h3>
         <input type="text" id="new-client-name" placeholder="اسم العميل">
@@ -61,7 +103,7 @@
         <button class="back-btn" onclick="goHome()">رجوع</button>
     </div>
 
-    <!-- Clients List -->
+    <!-- Clients List Screen -->
     <div id="clients-list-screen" class="hidden">
         <h3>قائمة العملاء الخاصة بي</h3>
         <div id="clients-display-list"></div>
@@ -81,7 +123,7 @@
         <button class="back-btn" onclick="goHome()">رجوع</button>
     </div>
     
-    <!-- Visits Log -->
+    <!-- Visits Log Screen -->
     <div id="visits-screen" class="hidden">
         <h3>سجل زياراتي والجرد</h3>
         <div id="visits-list"></div>
@@ -97,9 +139,12 @@
             <label><i class="fa-solid fa-filter"></i> تصفية حسب المندوب:</label>
             <select id="filter-rep-select" onchange="filterReports()"></select>
 
-            <label style="margin-top:5px;"><i class="fa-solid fa-calendar-days"></i> تصفية حسب التاريخ (اليوم/الشهر/السنة):</label>
-            <input type="date" id="filter-date-input" onchange="filterReports()">
-            <button style="padding:4px; font-size:11px; margin-bottom:0; background:#e0e0e0; border:none; border-radius:4px; cursor:pointer;" onclick="clearDateFilter()">عرض الكل بدون تحديد تاريخ</button>
+            <label style="margin-top:8px;"><i class="fa-solid fa-calendar-days"></i> تصفية حسب التاريخ:</label>
+            <div class="date-container">
+                <input type="date" id="filter-date-input" onchange="filterReports()">
+            </div>
+            
+            <button style="padding:8px; font-size:12px; margin-bottom:0; background:#e0e0e0; border:none; border-radius:6px; cursor:pointer;" onclick="clearDateFilter()">عرض الكل بدون تحديد تاريخ</button>
         </div>
 
         <div id="reports-content" style="max-height: 280px; overflow-y: auto; margin-bottom: 10px;"></div>
@@ -161,15 +206,15 @@
         const year = now.getFullYear();
         const month = String(now.getMonth() + 1).padStart(2, '0');
         const day = String(now.getDate()).padStart(2, '0');
-        const isoDate = `${year}-${month}-${day}`; // صياغة قياسية YYYY-MM-DD للفلترة
-        const timeStr = now.toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'});
+        const isoDate = `${year}-${month}-${day}`; 
+        const timeStr = now.toLocaleTimeString('en-GB', {hour: '2-digit', minute:'2-digit'});
 
         inventoryLogs.push({
             client, 
             rep, 
             details: details.join(' | ') || "لا يوجد كميات", 
             isoDate: isoDate,
-            displayDate: `${day}/${month}/${year} ${timeStr}`
+            displayDate: `${year}/${month}/${day} ${timeStr}`
         });
 
         localStorage.setItem('my_logs', JSON.stringify(inventoryLogs));
@@ -191,7 +236,7 @@
 
             document.getElementById('products-qty-list').innerHTML = products.map((p, idx) => `
                 <div class="item-row">
-                    <span style="font-weight:bold; font-size:14px;">${p}</span>
+                    <span style="font-weight:bold; font-size:14px; dir:ltr; display:inline-block;">${p}</span>
                     <input type="number" id="prod-qty-${idx}" placeholder="0" min="0">
                 </div>
             `).join('');
@@ -210,16 +255,15 @@
                     <div class="card" style="flex-direction:column; align-items:flex-start;">
                         <div style="display:flex; justify-content:space-between; width:100%;">
                             <strong>${l.client}</strong>
-                            <small style="color:gray;">${l.displayDate || l.date}</small>
+                            <small style="color:gray; direction:ltr; display:inline-block;">${l.displayDate || l.date}</small>
                         </div>
-                        <div style="margin-top:5px; font-size:13px; color:#333;">${l.details}</div>
+                        <div style="margin-top:5px; font-size:13px; color:#333; direction:ltr; text-align:right;">${l.details}</div>
                     </div>
                 `).join('') :
                 '<p style="text-align:center; color:gray; margin-top:20px;">لا يوجد سجل زيارات سابق لك</p>';
         }
 
         if(id === 'report-screen') {
-            // إعداد قائمة المندوبين الفريدة في الفلتر
             const repsList = [...new Set(inventoryLogs.map(l => l.rep))];
             let repOptions = '<option value="ALL">جميع المندوبين</option>';
             repsList.forEach(r => { repOptions += `<option value="${r}">${r}</option>`; });
@@ -249,10 +293,10 @@
                 <div class="card" style="flex-direction:column; align-items:flex-start;">
                     <div style="display:flex; justify-content:space-between; width:100%;">
                         <strong>${l.client}</strong>
-                        <small style="color:gray;">${l.displayDate || l.date}</small>
+                        <small style="color:gray; direction:ltr; display:inline-block;">${l.displayDate || l.date}</small>
                     </div>
                     <small style="color:var(--accent-blue); font-weight:bold;">المندوب: ${l.rep}</small>
-                    <div style="margin-top:5px; font-size:13px; color:#333;">${l.details}</div>
+                    <div style="margin-top:5px; font-size:13px; color:#333; direction:ltr; text-align:right;">${l.details}</div>
                 </div>
             `).join('');
         } else {
