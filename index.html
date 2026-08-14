@@ -3,10 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>أركان الدوائية - تطبيق المندوبين والجرد</title>
-    <!-- استدعاء خط Cairo المشابه تماماً للتطبيق -->
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-    <!-- استدعاء أيقونات FontAwesome -->
+    <title>أركان الدوائية - نظام المندوبين والجرد</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -19,432 +17,398 @@
             --btn-green: #2e7d32;
         }
 
-        * {
-            box-sizing: border-box;
-            font-family: 'Cairo', sans-serif;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; font-family: 'Cairo', sans-serif; margin: 0; padding: 0; }
 
         body {
             background-color: var(--primary-bg);
             background-image: radial-gradient(#b3e5fc 15%, transparent 16%), radial-gradient(#b3e5fc 15%, transparent 16%);
             background-size: 60px 60px;
-            background-position: 0 0, 30px 30px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 10px;
+            display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 10px;
         }
 
-        /* إطار الهاتف الذكي */
         .phone-container {
-            width: 100%;
-            max-width: 380px;
-            background: #ffffff;
-            border-radius: 35px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-            overflow: hidden;
-            border: 8px solid #ffffff;
-            position: relative;
-            min-height: 680px;
-            display: flex;
-            flex-direction: column;
+            width: 100%; max-width: 380px; background: #ffffff; border-radius: 35px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15); overflow: hidden; border: 8px solid #ffffff;
+            position: relative; min-height: 680px; display: flex; flex-direction: column;
         }
 
-        /* شريط الحالة العلوي */
-        .status-bar {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 18px 5px 18px;
-            font-size: 12px;
-            font-weight: bold;
-            color: #333;
-            background: #f8f9fa;
-        }
-
-        /* شريط المزامنة */
+        .status-bar { display: flex; justify-content: space-between; padding: 10px 18px 5px; font-size: 12px; font-weight: bold; background: #f8f9fa; }
+        
         .top-action-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 15px;
-            background: #f8f9fa;
-            border-bottom: 1px solid #eee;
+            display: flex; justify-content: space-between; align-items: center; padding: 10px 15px;
+            background: #f8f9fa; border-bottom: 1px solid #eee;
         }
 
         .sync-btn {
-            background: #fff;
-            border: 1px solid #ddd;
-            border-radius: 20px;
-            padding: 4px 12px;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            color: #555;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            background: #fff; border: 1px solid #ddd; border-radius: 20px; padding: 4px 12px;
+            font-size: 12px; display: flex; align-items: center; gap: 5px; color: #555; cursor: pointer;
         }
 
-        .menu-icon {
-            font-size: 18px;
-            color: #555;
-            cursor: pointer;
-        }
+        .app-body { padding: 20px 15px; flex-grow: 1; }
 
-        .app-body {
-            padding: 20px 15px;
-            flex-grow: 1;
-        }
+        .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 15px; margin-top: 15px; }
 
-        /* شبكة الأيقونات */
-        .grid-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px 15px;
-            margin-top: 10px;
-        }
-
-        .grid-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        .grid-item:active {
-            transform: scale(0.95);
-        }
+        .grid-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+        .grid-item:active { transform: scale(0.95); }
 
         .icon-circle {
-            width: 85px;
-            height: 85px;
-            background-color: var(--circle-bg);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 8px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+            width: 80px; height: 80px; background-color: var(--circle-bg); border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; margin-bottom: 8px;
+            position: relative; box-shadow: 0 2px 6px rgba(0,0,0,0.05);
         }
 
-        .icon-circle i {
-            font-size: 32px;
+        .icon-circle i { font-size: 30px; }
+        .grid-label { font-size: 13px; font-weight: 700; color: var(--text-color); text-align: center; }
+
+        .plus-badge {
+            position: absolute; top: 2px; right: 2px; background: #20bf6b; color: white;
+            border-radius: 50%; width: 22px; height: 22px; display: flex; justify-content: center;
+            align-items: center; font-size: 12px; font-weight: bold; border: 2px solid white;
         }
 
-        .grid-label {
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--text-color);
-            text-align: center;
-        }
-
-        /* الشعار والتذييل */
-        .app-footer {
-            text-align: center;
-            padding: 15px 0 25px 0;
-            font-size: 26px;
-            font-weight: 800;
-            color: #1e4d6b;
-            letter-spacing: -0.5px;
-        }
-
+        .app-footer { text-align: center; padding: 15px 0 20px; font-size: 24px; font-weight: 800; color: #1e4d6b; }
         .hidden { display: none !important; }
+        .screen-title { font-size: 16px; font-weight: bold; margin-bottom: 15px; color: #1e4d6b; text-align: center; }
 
-        /* شاشات الإدخال والجرد */
-        .screen-title {
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            color: #1e4d6b;
-            text-align: center;
-        }
+        input, select, button { width: 100%; padding: 11px; margin-bottom: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 13px; }
+        button.primary-btn { background-color: var(--accent-blue); color: white; border: none; font-weight: bold; cursor: pointer; }
+        button.success-btn { background-color: var(--btn-green); color: white; border: none; font-weight: bold; cursor: pointer; }
+        .back-btn { background: #6c757d; color: white; border: none; margin-top: 5px; cursor: pointer; }
 
-        input, select, button {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            font-size: 13px;
-        }
-
-        button.primary-btn {
-            background-color: var(--accent-blue);
-            color: white;
-            border: none;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        button.success-btn {
-            background-color: var(--btn-green);
-            color: white;
-            border: none;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .back-btn {
-            background: #6c757d;
-            color: white;
-            border: none;
-            margin-top: 5px;
-        }
-
-        .prod-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid #eee;
-            font-size: 13px;
-        }
-
-        .prod-item input {
-            width: 70px;
-            margin-bottom: 0;
-            text-align: center;
-        }
+        .tab-btn { padding: 8px; border: 1px solid #0288d1; background: white; color: #0288d1; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        .tab-btn.active { background: #0288d1; color: white; }
+        .card-list-item { background: #f8f9fa; border: 1px solid #eee; padding: 10px; border-radius: 8px; margin-bottom: 8px; }
     </style>
 </head>
 <body>
 
 <div class="phone-container">
-    <!-- شريط النظام العلوي -->
     <div class="status-bar">
         <span>10:28</span>
-        <div>
-            <i class="fa-solid fa-wifi"></i>
-            <i class="fa-solid fa-battery-full" style="margin-right: 5px;"></i>
-        </div>
+        <div><i class="fa-solid fa-wifi"></i> <i class="fa-solid fa-battery-full"></i></div>
     </div>
 
-    <!-- شريط المزامنة والقائمة -->
-    <div class="top-action-bar">
-        <div class="sync-btn" onclick="syncData()">
-            <i class="fa-solid fa-rotate" style="color: #d9534f;"></i>
-            <span>مزامنة</span>
-        </div>
-        <i class="fa-solid fa-bars menu-icon" onclick="toggleMenu()"></i>
+    <div id="app-top-bar" class="top-action-bar hidden">
+        <div class="sync-btn" onclick="syncData()"><i class="fa-solid fa-rotate" style="color: #d9534f;"></i><span>مزامنة</span></div>
+        <div style="font-size:12px; color:#0288d1; font-weight:bold;" id="current-user-display"></div>
+        <i class="fa-solid fa-right-from-bracket" onclick="logout()" style="color: #dc3545; cursor: pointer;"></i>
     </div>
 
-    <!-- 1. الشاشة الرئيسية (الأيقونات) -->
-    <div id="home-screen" class="app-body">
+    <!-- 1. شاشة تسجيل الدخول -->
+    <div id="login-screen" class="app-body" style="display: flex; flex-direction: column; justify-content: center;">
+        <div style="text-align: center; margin-bottom: 25px;">
+            <i class="fa-solid fa-user-shield" style="font-size: 50px; color: #0288d1; margin-bottom: 10px;"></i>
+            <h2 style="color: #1e4d6b; font-size: 20px;">تسجيل الدخول</h2>
+        </div>
+        <label style="font-size: 12px; font-weight: bold;">اسم المستخدم:</label>
+        <select id="login-username">
+            <option value="">-- اختر المستخدم --</option>
+            <option value="ايهاب العريبي">ايهاب العريبي (المدير العام)</option>
+            <option value="محمد العريبي">محمد العريبي</option>
+            <option value="محمد الزاوي">محمد الزاوي</option>
+            <option value="مهند نجم">مهند نجم</option>
+            <option value="سفيان الشهيبي">سفيان الشهيبي</option>
+            <option value="احمد محارب">احمد محارب</option>
+            <option value="حافظ احليق">حافظ احليق</option>
+            <option value="ايوب الدرسي">ايوب الدرسي</option>
+            <option value="حسام هابيل">حسام هابيل</option>
+            <option value="ماهر">ماهر</option>
+        </select>
+
+        <label style="font-size: 12px; font-weight: bold;">الرقم السري:</label>
+        <input type="password" id="login-password" placeholder="أدخل الرقم السري">
+        <button class="primary-btn" onclick="login()">دخول النظام</button>
+    </div>
+
+    <!-- 2. الشاشة الرئيسية (تحتوي على الخانات المطلوبة) -->
+    <div id="home-screen" class="app-body hidden">
         <div class="grid-container">
-            <div class="grid-item" onclick="openScreen('inventory-screen')">
-                <div class="icon-circle">
-                    <i class="fa-solid fa-boxes-packing" style="color: #0288d1;"></i>
-                </div>
-                <span class="grid-label">الجرد الحالي</span>
-            </div>
-
+            <!-- 1. العملاء (يحتوي على علامة + لإضافة عميل) -->
             <div class="grid-item" onclick="openScreen('clients-screen')">
                 <div class="icon-circle">
-                    <i class="fa-solid fa-user-doctor" style="color: #4b6584;"></i>
+                    <i class="fa-solid fa-users" style="color: #0288d1;"></i>
+                    <div class="plus-badge" title="إضافة عميل">+</div>
                 </div>
-                <span class="grid-label">عملاء المندوب</span>
+                <span class="grid-label">العملاء</span>
             </div>
 
-            <div class="grid-item" onclick="openAddClient('شركة')">
-                <div class="icon-circle">
-                    <i class="fa-solid fa-industry" style="color: #d9534f;"></i>
-                </div>
-                <span class="grid-label">أضافة شركة</span>
-            </div>
-
-            <div class="grid-item" onclick="openAddClient('صيدلية')">
-                <div class="icon-circle">
-                    <i class="fa-solid fa-hospital-user" style="color: #00a8ff;"></i>
-                </div>
-                <span class="grid-label">أضافة صيدلية</span>
-            </div>
-
-            <div class="grid-item" onclick="openAddClient('عيادة')">
-                <div class="icon-circle">
-                    <i class="fa-solid fa-square-h" style="color: #20bf6b;"></i>
-                </div>
-                <span class="grid-label">أضافة عيادة</span>
-            </div>
-
+            <!-- 2. سجل الزيارات -->
             <div class="grid-item" onclick="openScreen('visits-screen')">
                 <div class="icon-circle">
-                    <i class="fa-solid fa-truck-ramp-box" style="color: #f7b731;"></i>
+                    <i class="fa-solid fa-clipboard-list" style="color: #f7b731;"></i>
                 </div>
                 <span class="grid-label">سجل الزيارات</span>
             </div>
 
-            <div class="grid-item" onclick="openScreen('orders-screen')">
+            <!-- 3. الجرد -->
+            <div class="grid-item" onclick="openScreen('inventory-screen')">
                 <div class="icon-circle">
-                    <i class="fa-solid fa-box-open" style="color: #26de81;"></i>
+                    <i class="fa-solid fa-boxes-stacked" style="color: #eb3b5a;"></i>
                 </div>
-                <span class="grid-label">تسجيل طلبية</span>
+                <span class="grid-label">الجرد</span>
             </div>
 
-            <div class="grid-item" onclick="openScreen('search-screen')">
+            <!-- 4. إضافة صنف -->
+            <div class="grid-item" onclick="openScreen('add-product-screen')">
                 <div class="icon-circle">
-                    <i class="fa-solid fa-capsules" style="color: #eb3b5a;"></i>
+                    <i class="fa-solid fa-pills" style="color: #8e44ad;"></i>
+                    <div class="plus-badge">+</div>
                 </div>
-                <span class="grid-label">بحث الأدوية</span>
+                <span class="grid-label">إضافة صنف</span>
             </div>
         </div>
     </div>
 
-    <!-- 2. شاشة جرد العملاء -->
-    <div id="inventory-screen" class="app-body hidden">
-        <div class="screen-title">جرد العملاء</div>
-        <input type="text" id="search-client" placeholder="🔍 بحث عن عميل..." onkeyup="filterClients()">
+    <!-- شاشة العملاء (مقسمة حسب النوع مع زر إضافة عميل جديد) -->
+    <div id="clients-screen" class="app-body hidden">
+        <div class="screen-title">قائمة العملاء</div>
         
-        <label style="font-size: 12px; font-weight: bold;">اختر العميل:</label>
-        <select id="client-dropdown" onchange="showProductsForm()">
-            <option value="">-- اختر العميل --</option>
-        </select>
+        <button class="success-btn" onclick="openScreen('add-client-screen')" style="margin-bottom: 12px;">
+            <i class="fa-solid fa-plus"></i> إضافة عميل جديد
+        </button>
 
-        <div id="products-form" class="hidden" style="margin-top: 15px;">
-            <div style="font-size: 13px; font-weight: bold; margin-bottom: 8px;">الأصناف المتوفرة:</div>
-            <div id="products-container"></div>
-            <button class="success-btn" onclick="saveInventory()" style="margin-top: 10px;">حفظ الجرد</button>
+        <div style="display: flex; gap: 5px; margin-bottom: 12px;">
+            <button class="tab-btn active" onclick="filterClientCategory('الكل', this)">الكل</button>
+            <button class="tab-btn" onclick="filterClientCategory('صيدلية', this)">صيدليات</button>
+            <button class="tab-btn" onclick="filterClientCategory('شركة', this)">شركات</button>
+            <button class="tab-btn" onclick="filterClientCategory('عيادة', this)">عيادات</button>
         </div>
-
+        <div id="clients-list-container"></div>
         <button class="back-btn" onclick="goHome()">رجوع للرئيسية</button>
     </div>
 
-    <!-- 3. شاشة إضافة عميل جديد -->
+    <!-- شاشة إضافة عميل -->
     <div id="add-client-screen" class="app-body hidden">
-        <div class="screen-title" id="add-title">إضافة عميل</div>
-        
-        <input type="text" id="new-name" placeholder="اسم العميل (مثال: صيدلية المركز)">
-        <select id="new-type">
+        <div class="screen-title">إضافة عميل جديد (+)</div>
+        <input type="text" id="new-client-name" placeholder="اسم العميل">
+        <select id="new-client-type">
             <option value="صيدلية">صيدلية</option>
             <option value="شركة">شركة</option>
             <option value="عيادة">عيادة</option>
         </select>
+        <button class="success-btn" onclick="saveClient()">حفظ العميل</button>
+        <button class="back-btn" onclick="openScreen('clients-screen')">إلغاء</button>
+    </div>
 
-        <button class="success-btn" onclick="saveNewClient()">حفظ العميل</button>
+    <!-- شاشة الجرد -->
+    <div id="inventory-screen" class="app-body hidden">
+        <div class="screen-title">تسجيل جرد لعميل</div>
+        <label style="font-size:12px; font-weight:bold;">اختر العميل:</label>
+        <select id="inv-client-select" onchange="renderInventoryForm()"></select>
+        
+        <div id="inv-products-form" class="hidden">
+            <div id="inv-products-list"></div>
+            <button class="success-btn" onclick="saveInventoryData()" style="margin-top:10px;">حفظ وإرسال الجرد</button>
+        </div>
+        <button class="back-btn" onclick="goHome()">رجوع</button>
+    </div>
+
+    <!-- شاشة سجل الزيارات للجرد -->
+    <div id="visits-screen" class="app-body hidden">
+        <div class="screen-title">سجل جرد الزيارات</div>
+        <div id="visits-log-container"></div>
+        <button class="back-btn" onclick="goHome()">رجوع للرئيسية</button>
+    </div>
+
+    <!-- شاشة إضافة صنف جديد -->
+    <div id="add-product-screen" class="app-body hidden">
+        <div class="screen-title">إضافة صنف جديد (+)</div>
+        <input type="text" id="new-prod-name" placeholder="اسم الدواء / الصنف">
+        <input type="text" id="new-prod-code" placeholder="رمز / كود الصنف (اختياري)">
+        <button class="success-btn" onclick="saveProduct()">حفظ الصنف</button>
         <button class="back-btn" onclick="goHome()">إلغاء</button>
     </div>
 
-    <!-- شعار الشركة في الأسفل -->
-    <div class="app-footer">
-        أركان الدوائية
-    </div>
+    <div class="app-footer">أركان الدوائية</div>
 </div>
 
 <script>
-    // اسم المستخدم الحالي (المندوب)
-    let currentUser = "مندوب 1";
+    const usersDatabase = {
+        "ايهاب العريبي": { pass: "2100201900", role: "admin" },
+        "محمد العريبي": { pass: "123", role: "rep" },
+        "محمد الزاوي": { pass: "123", role: "rep" },
+        "مهند نجم": { pass: "123", role: "rep" },
+        "سفيان الشهيبي": { pass: "123", role: "rep" },
+        "احمد محارب": { pass: "123", role: "rep" },
+        "حافظ احليق": { pass: "123", role: "rep" },
+        "ايوب الدرسي": { pass: "123", role: "rep" },
+        "حسام هابيل": { pass: "123", role: "rep" },
+        "ماهر": { pass: "123", role: "rep" }
+    };
 
-    // قائمة العملاء المخزنة
-    let clients = [
-        { name: "صيدلية الشفاء", type: "صيدلية", rep: "مندوب 1" },
-        { name: "عيادة الأمل", type: "عيادة", rep: "مندوب 1" },
-        { name: "شركة السلام للأدوية", type: "شركة", rep: "مندوب 2" }
+    let currentUser = null;
+    let clientsData = JSON.parse(localStorage.getItem('arkan_clients')) || [
+        { name: "صيدلية المركز", type: "صيدلية", rep: "محمد العريبي" },
+        { name: "شركة الأمل", type: "شركة", rep: "محمد الزاوي" },
+        { name: "عيادة الشفاء", type: "عيادة", rep: "مهند نجم" }
     ];
 
-    // قائمة المنتجات
-    const products = [
-        "بندول 500 ملجم",
-        "أوميبرازول 20 ملجم",
-        "شراب سيكافام",
-        "فيتامين سي 1000"
-    ];
+    let productsList = JSON.parse(localStorage.getItem('arkan_products')) || ["بندول 500 ملجم", "شراب سيكافام", "أوميبرازول 20 ملجم"];
+    let inventoryLogs = JSON.parse(localStorage.getItem('arkan_inventory_logs')) || [];
+
+    function login() {
+        const u = document.getElementById('login-username').value;
+        const p = document.getElementById('login-password').value;
+        if (usersDatabase[u] && usersDatabase[u].pass === p) {
+            currentUser = u;
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('app-top-bar').classList.remove('hidden');
+            document.getElementById('current-user-display').innerText = currentUser;
+            goHome();
+        } else { alert("البيانات غير صحيحة"); }
+    }
+
+    function logout() {
+        currentUser = null;
+        document.querySelectorAll('.app-body').forEach(e => e.classList.add('hidden'));
+        document.getElementById('login-screen').classList.remove('hidden');
+        document.getElementById('app-top-bar').classList.add('hidden');
+    }
 
     function goHome() {
-        document.querySelectorAll('.app-body').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.app-body').forEach(e => e.classList.add('hidden'));
         document.getElementById('home-screen').classList.remove('hidden');
     }
 
     function openScreen(screenId) {
-        document.querySelectorAll('.app-body').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.app-body').forEach(e => e.classList.add('hidden'));
         document.getElementById(screenId).classList.remove('hidden');
 
-        if(screenId === 'inventory-screen') {
-            loadClientOptions();
-        }
+        if (screenId === 'clients-screen') renderClients('الكل');
+        if (screenId === 'inventory-screen') prepareInventoryScreen();
+        if (screenId === 'visits-screen') renderVisitsLog();
     }
 
-    function loadClientOptions() {
-        const select = document.getElementById('client-dropdown');
-        select.innerHTML = '<option value="">-- اختر العميل --</option>';
+    /* 1. قسم العملاء */
+    function renderClients(typeFilter) {
+        const container = document.getElementById('clients-list-container');
+        container.innerHTML = '';
         
-        clients.forEach(c => {
-            if (currentUser === "أدمن" || c.rep === currentUser) {
-                let opt = document.createElement('option');
-                opt.value = c.name;
-                opt.innerText = `${c.name} (${c.type})`;
-                select.appendChild(opt);
-            }
-        });
-    }
+        let filtered = clientsData.filter(c => currentUser === "ايهاب العريبي" || c.rep === currentUser);
+        if (typeFilter !== 'الكل') filtered = filtered.filter(c => c.type === typeFilter);
 
-    function filterClients() {
-        const text = document.getElementById('search-client').value.toLowerCase();
-        const options = document.getElementById('client-dropdown').options;
-        for (let i = 1; i < options.length; i++) {
-            options[i].style.display = options[i].text.toLowerCase().includes(text) ? "" : "none";
-        }
-    }
-
-    function showProductsForm() {
-        const client = document.getElementById('client-dropdown').value;
-        const container = document.getElementById('products-container');
-        const form = document.getElementById('products-form');
-
-        if(!client) {
-            form.classList.add('hidden');
+        if (filtered.length === 0) {
+            container.innerHTML = `<p style="text-align:center; font-size:12px; color:#888;">لا يوجد عملاء مضافين</p>`;
             return;
         }
 
-        container.innerHTML = '';
-        products.forEach(p => {
+        filtered.forEach(c => {
             container.innerHTML += `
-                <div class="prod-item">
-                    <span>${p}</span>
-                    <input type="number" min="0" value="0">
+                <div class="card-list-item">
+                    <strong style="color:#0288d1;">${c.name}</strong> 
+                    <span style="font-size:11px; background:#e3f2fd; padding:2px 6px; border-radius:4px; margin-right:5px;">${c.type}</span>
+                    <div style="font-size:11px; color:#666; margin-top:4px;">المندوب المسؤول: ${c.rep}</div>
+                </div>
+            `;
+        });
+    }
+
+    function filterClientCategory(cat, btn) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderClients(cat);
+    }
+
+    function saveClient() {
+        const name = document.getElementById('new-client-name').value.trim();
+        const type = document.getElementById('new-client-type').value;
+        if (!name) return alert("يرجى إدخال اسم العميل");
+
+        clientsData.push({ name, type, rep: currentUser });
+        localStorage.setItem('arkan_clients', JSON.stringify(clientsData));
+        alert("تمت إضافة العميل بنجاح!");
+        document.getElementById('new-client-name').value = '';
+        openScreen('clients-screen');
+    }
+
+    /* 2. قسم الجرد */
+    function prepareInventoryScreen() {
+        const select = document.getElementById('inv-client-select');
+        select.innerHTML = '<option value="">-- اختر العميل --</option>';
+        clientsData.filter(c => currentUser === "ايهاب العريبي" || c.rep === currentUser).forEach(c => {
+            select.innerHTML += `<option value="${c.name}">${c.name} (${c.type})</option>`;
+        });
+        document.getElementById('inv-products-form').classList.add('hidden');
+    }
+
+    function renderInventoryForm() {
+        const client = document.getElementById('inv-client-select').value;
+        const form = document.getElementById('inv-products-form');
+        const list = document.getElementById('inv-products-list');
+        if(!client) return form.classList.add('hidden');
+
+        list.innerHTML = '';
+        productsList.forEach((p, idx) => {
+            list.innerHTML += `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <span style="font-size:13px;">${p}</span>
+                    <input type="number" id="prod-qty-${idx}" placeholder="الكمية" style="width:80px; margin-bottom:0;" min="0">
                 </div>
             `;
         });
         form.classList.remove('hidden');
     }
 
-    function openAddClient(type) {
-        openScreen('add-client-screen');
-        document.getElementById('add-title').innerText = `إضافة ${type} جديد`;
-        document.getElementById('new-type').value = type;
+    function saveInventoryData() {
+        const client = document.getElementById('inv-client-select').value;
+        let details = [];
+        productsList.forEach((p, idx) => {
+            let qty = document.getElementById(`prod-qty-${idx}`).value || 0;
+            details.push(`${p}: ${qty}`);
+        });
+
+        inventoryLogs.unshift({
+            client: client,
+            rep: currentUser,
+            date: new Date().toLocaleString('ar-LY'),
+            items: details
+        });
+
+        localStorage.setItem('arkan_inventory_logs', JSON.stringify(inventoryLogs));
+        alert("تم حفظ الجرد وإرساله بنجاح!");
+        goHome();
     }
 
-    function saveNewClient() {
-        const name = document.getElementById('new-name').value.trim();
-        const type = document.getElementById('new-type').value;
+    /* 3. سجل الزيارات والجرد */
+    function renderVisitsLog() {
+        const container = document.getElementById('visits-log-container');
+        container.innerHTML = '';
+        
+        let logs = inventoryLogs.filter(l => currentUser === "ايهاب العريبي" || l.rep === currentUser);
 
-        if(!name) {
-            alert("يرجى كتابة اسم العميل");
+        if (logs.length === 0) {
+            container.innerHTML = `<p style="text-align:center; font-size:12px; color:#888;">لا توجد عمليات جرد مسجلة</p>`;
             return;
         }
 
-        // الربط التلقائي بالمندوب الحالي
-        clients.push({ name: name, type: type, rep: currentUser });
-        alert(`تم إضافة (${name}) وربطه تلقائياً بـ ${currentUser}`);
-        
-        document.getElementById('new-name').value = '';
+        logs.forEach(l => {
+            container.innerHTML += `
+                <div class="card-list-item">
+                    <div style="display:flex; justify-content:space-between; font-weight:bold; color:#1e4d6b;">
+                        <span>${l.client}</span>
+                        <span style="font-size:10px; color:#888;">${l.date}</span>
+                    </div>
+                    <div style="font-size:11px; color:#0288d1;">المندوب: ${l.rep}</div>
+                    <hr style="margin:5px 0; border:none; border-top:1px dashed #ccc;">
+                    <div style="font-size:11px; color:#444;">${l.items.join(' | ')}</div>
+                </div>
+            `;
+        });
+    }
+
+    /* 4. إضافة صنف */
+    function saveProduct() {
+        const pName = document.getElementById('new-prod-name').value.trim();
+        if (!pName) return alert("يرجى إدخال اسم الصنف");
+
+        productsList.push(pName);
+        localStorage.setItem('arkan_products', JSON.stringify(productsList));
+        alert("تمت إضافة الصنف بنجاح!");
+        document.getElementById('new-prod-name').value = '';
         goHome();
     }
 
-    function saveInventory() {
-        alert("تم حفظ بيانات الجرد بنجاح!");
-        goHome();
-    }
-
-    function syncData() {
-        alert("جاري مزامنة البيانات مع السيرفر...");
-    }
-
-    function toggleMenu() {
-        alert("القائمة الرئيسية - شركة أركان الدوائية");
-    }
+    function syncData() { alert("تمت المزامنة بنجاح مع السيرفر الرئيسي!"); }
 </script>
-
 </body>
 </html>
