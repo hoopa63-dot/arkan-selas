@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>شركة أركان الدوائية</title>
+    <link rel="manifest" href="manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -14,7 +15,6 @@
         .hidden { display: none !important; }
         input, select, button { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; text-align: right; }
         
-        /* ضبط خانة التاريخ لمنع انعكاس الحروف */
         input[type="date"] {
             direction: ltr !important;
             text-align: right !important;
@@ -23,6 +23,7 @@
 
         .primary-btn { background: var(--accent-blue); color: white; border: none; font-weight: bold; cursor: pointer; text-align: center; }
         .back-btn { background: #6c757d; color: white; border: none; text-align: center; }
+        .delete-btn { background: #d32f2f; color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; width: auto; font-size: 12px; margin-bottom: 0; }
         .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
         .grid-item { background: #f8f9fa; padding: 15px; border-radius: 12px; text-align: center; cursor: pointer; border: 1px solid #eee; }
         .card { background: #fff; border: 1px solid #eee; padding: 10px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
@@ -60,6 +61,13 @@
             font-size: 14px;
             margin-top: 2px;
         }
+        .admin-add-box {
+            background: #f0f7ff;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #b3e5fc;
+        }
     </style>
 </head>
 <body>
@@ -82,15 +90,15 @@
         <h3 id="welcome-msg" style="text-align:center;"></h3>
         <div class="grid-container">
             <div class="grid-item" onclick="openScreen('clients-list-screen')"><i class="fa-solid fa-users"></i><br>العملاء</div>
-            <div class="grid-item" onclick="openScreen('add-client-screen')"><i class="fa-solid fa-user-plus"></i><br>إضافة عميل</div>
+            <div class="grid-item" id="user-add-client-btn" onclick="openScreen('add-client-screen')"><i class="fa-solid fa-user-plus"></i><br>إضافة عميل</div>
             <div class="grid-item" onclick="openScreen('visits-screen')"><i class="fa-solid fa-clipboard-list"></i><br>سجل الزيارات</div>
-            <div class="grid-item" onclick="openScreen('inventory-screen')"><i class="fa-solid fa-boxes-stacked"></i><br>جرد جديد</div>
+            <div class="grid-item" id="user-inventory-btn" onclick="openScreen('inventory-screen')"><i class="fa-solid fa-boxes-stacked"></i><br>جرد جديد</div>
             <div class="grid-item hidden" id="admin-report-btn" onclick="openScreen('report-screen')"><i class="fa-solid fa-chart-line"></i><br>التقارير الشاملة</div>
         </div>
         <button class="back-btn" style="margin-top:20px;" onclick="location.reload()">خروج</button>
     </div>
 
-    <!-- Add Client Screen -->
+    <!-- Add Client Screen (للمندوب العادي فقط) -->
     <div id="add-client-screen" class="hidden">
         <h3>إضافة عميل جديد</h3>
         <input type="text" id="new-client-name" placeholder="اسم العميل">
@@ -105,9 +113,23 @@
 
     <!-- Clients List Screen -->
     <div id="clients-list-screen" class="hidden">
-        <h3>قائمة العملاء الخاصة بي</h3>
-        <div id="clients-display-list"></div>
-        <button class="back-btn" onclick="goHome()">رجوع</button>
+        <h3>إدارة العملاء</h3>
+        
+        <!-- قسم إضافة عميل الخاص بالأدمن -->
+        <div id="admin-add-client-section" class="admin-add-box hidden">
+            <h4 style="font-size:13px; margin-bottom:8px; color:var(--accent-blue);">إضافة عميل لمندوب معين:</h4>
+            <select id="admin-select-rep"></select>
+            <input type="text" id="admin-client-name" placeholder="اسم العميل الجديد">
+            <select id="admin-client-type">
+                <option value="صيدلية">صيدلية</option>
+                <option value="شركة">شركة</option>
+                <option value="عيادة">عيادة</option>
+            </select>
+            <button class="primary-btn" style="padding:6px; font-size:13px;" onclick="addClientByAdmin()">إضافة العميل</button>
+        </div>
+
+        <div id="clients-display-list" style="max-height: 350px; overflow-y: auto;"></div>
+        <button class="back-btn" style="margin-top:10px;" onclick="goHome()">رجوع</button>
     </div>
 
     <!-- New Inventory Screen -->
@@ -125,9 +147,9 @@
     
     <!-- Visits Log Screen -->
     <div id="visits-screen" class="hidden">
-        <h3>سجل زياراتي والجرد</h3>
+        <h3>سجل الزيارات والجرد</h3>
         <div id="visits-list"></div>
-        <button class="back-btn" onclick="goHome()">رجوع</button>
+        <button class="back-btn" style="margin-top:10px;" onclick="goHome()">رجوع</button>
     </div>
 
     <!-- Admin Reports Screen -->
@@ -157,6 +179,11 @@
     let products = ["Irosky", "Pregna sky", "Ido sky", "Men sky", "Women sky", "D sky", "Calci sky"];
     let inventoryLogs = JSON.parse(localStorage.getItem('my_logs')) || [];
 
+    function isAdmin() {
+        const name = localStorage.getItem('currentUser') || '';
+        return name === "ايهاب العريبي" || name === "إيهاب العريبي";
+    }
+
     function login() {
         const name = document.getElementById('login-name').value.trim();
         if(name) {
@@ -165,8 +192,14 @@
             document.getElementById('home-screen').classList.remove('hidden');
             document.getElementById('welcome-msg').innerText = "مرحباً " + name;
             
-            if(name === "ايهاب العريبي" || name === "إيهاب العريبي") {
+            if(isAdmin()) {
                 document.getElementById('admin-report-btn').classList.remove('hidden');
+                document.getElementById('user-add-client-btn').classList.add('hidden');
+                document.getElementById('user-inventory-btn').classList.add('hidden');
+            } else {
+                document.getElementById('admin-report-btn').classList.add('hidden');
+                document.getElementById('user-add-client-btn').classList.remove('hidden');
+                document.getElementById('user-inventory-btn').classList.remove('hidden');
             }
         }
     }
@@ -182,6 +215,35 @@
             alert("تم حفظ العميل بنجاح!");
             document.getElementById('new-client-name').value = '';
             goHome();
+        }
+    }
+
+    function addClientByAdmin() {
+        const rep = document.getElementById('admin-select-rep').value;
+        const name = document.getElementById('admin-client-name').value;
+        const type = document.getElementById('admin-client-type').value;
+
+        if(!rep) {
+            alert("يرجى اختيار مندوب أولاً!");
+            return;
+        }
+        if(!name) {
+            alert("يرجى إدخال اسم العميل!");
+            return;
+        }
+
+        clients.push({name, type, rep});
+        localStorage.setItem('my_clients', JSON.stringify(clients));
+        alert(`تمت إضافة العميل ${name} للمندوب ${rep} بنجاح!`);
+        document.getElementById('admin-client-name').value = '';
+        openScreen('clients-list-screen');
+    }
+
+    function deleteClient(index) {
+        if(confirm("هل أنت تأكد من حذف هذا العميل؟")) {
+            clients.splice(index, 1);
+            localStorage.setItem('my_clients', JSON.stringify(clients));
+            openScreen('clients-list-screen');
         }
     }
 
@@ -227,9 +289,9 @@
         document.getElementById(id).classList.remove('hidden');
         
         const currentRep = localStorage.getItem('currentUser');
-        const myClients = clients.filter(c => c.rep === currentRep);
 
         if(id === 'inventory-screen') {
+            const myClients = clients.filter(c => c.rep === currentRep);
             document.getElementById('inv-client-select').innerHTML = myClients.length ? 
                 myClients.map(c => `<option value="${c.name}">${c.name} (${c.type})</option>`).join('') :
                 '<option value="">لا يوجد عملاء مضافين لك</option>';
@@ -243,24 +305,73 @@
         }
 
         if(id === 'clients-list-screen') {
-            document.getElementById('clients-display-list').innerHTML = myClients.length ? 
-                myClients.map(c => `<div class="card"><span>${c.name}</span><small style="color:var(--accent-blue)">(${c.type})</small></div>`).join('') :
-                '<p style="text-align:center; color:gray; margin-top:20px;">لا يوجد عملاء مسجلين باسمك</p>';
+            if(isAdmin()) {
+                document.getElementById('admin-add-client-section').classList.remove('hidden');
+                
+                // قائمة المندوبين
+                let repsList = [...new Set(inventoryLogs.map(l => l.rep).concat(clients.map(c => c.rep)))];
+                if(repsList.length === 0) repsList = [currentRep];
+                document.getElementById('admin-select-rep').innerHTML = repsList.map(r => `<option value="${r}">${r}</option>`).join('');
+
+                // عرض جميع العملاء مع إمكانية الحذف
+                document.getElementById('clients-display-list').innerHTML = clients.length ?
+                    clients.map((c, index) => `
+                        <div class="card">
+                            <div>
+                                <strong>${c.name}</strong> <small style="color:var(--accent-blue)">(${c.type})</small>
+                                <br><small style="color:gray;">المندوب: ${c.rep}</small>
+                            </div>
+                            <button class="delete-btn" onclick="deleteClient(${index})"><i class="fa-solid fa-trash"></i> حذف</button>
+                        </div>
+                    `).join('') :
+                    '<p style="text-align:center; color:gray; margin-top:20px;">لا يوجد عملاء مسجلين</p>';
+            } else {
+                document.getElementById('admin-add-client-section').classList.add('hidden');
+                const myClients = clients.filter(c => c.rep === currentRep);
+                document.getElementById('clients-display-list').innerHTML = myClients.length ? 
+                    myClients.map(c => `<div class="card"><span>${c.name}</span><small style="color:var(--accent-blue)">(${c.type})</small></div>`).join('') :
+                    '<p style="text-align:center; color:gray; margin-top:20px;">لا يوجد عملاء مسجلين باسمك</p>';
+            }
         }
 
         if(id === 'visits-screen') {
-            const myLogs = inventoryLogs.filter(l => l.rep === currentRep);
-            document.getElementById('visits-list').innerHTML = myLogs.length ? 
-                myLogs.map(l => `
-                    <div class="card" style="flex-direction:column; align-items:flex-start;">
-                        <div style="display:flex; justify-content:space-between; width:100%;">
-                            <strong>${l.client}</strong>
-                            <small style="color:gray; direction:ltr; display:inline-block;">${l.displayDate || l.date}</small>
+            if(isAdmin()) {
+                // للأدمن: عرض إحصائيات أعداد الجرد لكل مندوب
+                let counts = {};
+                inventoryLogs.forEach(l => {
+                    counts[l.rep] = (counts[l.rep] || 0) + 1;
+                });
+
+                let html = '<div style="margin-bottom:10px; font-weight:bold;">عدد عمليات الجرد لكل مندوب:</div>';
+                let reps = Object.keys(counts);
+                if(reps.length > 0) {
+                    reps.forEach(r => {
+                        html += `
+                            <div class="card">
+                                <span><i class="fa-solid fa-user-check" style="color:var(--accent-blue);"></i> ${r}</span>
+                                <span style="background:var(--accent-blue); color:white; padding:3px 10px; border-radius:12px; font-weight:bold;">${counts[r]} جرد</span>
+                            </div>
+                        `;
+                    });
+                } else {
+                    html += '<p style="text-align:center; color:gray; margin-top:20px;">لا يوجد عمليات جرد مسجلة حتى الآن</p>';
+                }
+                document.getElementById('visits-list').innerHTML = html;
+            } else {
+                // للمندوب: عرض سجل زياراته وتفاصيلها
+                const myLogs = inventoryLogs.filter(l => l.rep === currentRep);
+                document.getElementById('visits-list').innerHTML = myLogs.length ? 
+                    myLogs.map(l => `
+                        <div class="card" style="flex-direction:column; align-items:flex-start;">
+                            <div style="display:flex; justify-content:space-between; width:100%;">
+                                <strong>${l.client}</strong>
+                                <small style="color:gray; direction:ltr; display:inline-block;">${l.displayDate || l.date}</small>
+                            </div>
+                            <div style="margin-top:5px; font-size:13px; color:#333; direction:ltr; text-align:right;">${l.details}</div>
                         </div>
-                        <div style="margin-top:5px; font-size:13px; color:#333; direction:ltr; text-align:right;">${l.details}</div>
-                    </div>
-                `).join('') :
-                '<p style="text-align:center; color:gray; margin-top:20px;">لا يوجد سجل زيارات سابق لك</p>';
+                    `).join('') :
+                    '<p style="text-align:center; color:gray; margin-top:20px;">لا يوجد سجل زيارات سابق لك</p>';
+            }
         }
 
         if(id === 'report-screen') {
