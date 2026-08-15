@@ -21,6 +21,23 @@
             font-family: inherit;
         }
 
+        .remember-me {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #555;
+            cursor: pointer;
+        }
+
+        .remember-me input[type="checkbox"] {
+            width: auto;
+            margin-bottom: 0;
+            cursor: pointer;
+        }
+
         .primary-btn { background: var(--accent-blue); color: white; border: none; font-weight: bold; cursor: pointer; text-align: center; }
         .back-btn { background: #6c757d; color: white; border: none; text-align: center; }
         .delete-btn { background: #d32f2f; color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; width: auto; font-size: 12px; margin-bottom: 0; }
@@ -82,6 +99,12 @@
         </div>
         <input type="text" id="login-name" placeholder="اسم المندوب">
         <input type="password" id="login-pass" placeholder="الرقم السري">
+        
+        <label class="remember-me">
+            <input type="checkbox" id="remember-me-check">
+            تذكرني
+        </label>
+
         <button class="primary-btn" onclick="login()">دخول</button>
     </div>
 
@@ -98,7 +121,7 @@
         <button class="back-btn" style="margin-top:20px;" onclick="location.reload()">خروج</button>
     </div>
 
-    <!-- Add Client Screen (للمندوب العادي فقط) -->
+    <!-- Add Client Screen -->
     <div id="add-client-screen" class="hidden">
         <h3>إضافة عميل جديد</h3>
         <input type="text" id="new-client-name" placeholder="اسم العميل">
@@ -115,10 +138,11 @@
     <div id="clients-list-screen" class="hidden">
         <h3>إدارة العملاء</h3>
         
-        <!-- قسم إضافة عميل الخاص بالأدمن -->
         <div id="admin-add-client-section" class="admin-add-box hidden">
             <h4 style="font-size:13px; margin-bottom:8px; color:var(--accent-blue);">إضافة عميل لمندوب معين:</h4>
-            <select id="admin-select-rep"></select>
+            <select id="admin-select-rep" onchange="toggleNewRepInput()"></select>
+            <input type="text" id="admin-custom-rep-name" class="hidden" placeholder="أدخل اسم المندوب الجديد">
+            
             <input type="text" id="admin-client-name" placeholder="اسم العميل الجديد">
             <select id="admin-client-type">
                 <option value="صيدلية">صيدلية</option>
@@ -156,7 +180,6 @@
     <div id="report-screen" class="hidden">
         <h3 style="margin-bottom:10px;">التقارير الشاملة (الأدمن)</h3>
         
-        <!-- أدوات التصفية -->
         <div class="filter-box">
             <label><i class="fa-solid fa-filter"></i> تصفية حسب المندوب:</label>
             <select id="filter-rep-select" onchange="filterReports()"></select>
@@ -175,9 +198,42 @@
 </div>
 
 <script>
-    let clients = JSON.parse(localStorage.getItem('my_clients')) || [];
+    // التوزيع المبدئي للعملاء وتصحيح أي بيانات متضررة تحتوي على undefined
+    let rawClients = JSON.parse(localStorage.getItem('my_clients')) || [
+        { name: "صيدلية الأمل", type: "صيدلية", rep: "عام" },
+        { name: "صيدلية سعد فينيسيا", type: "صيدلية", rep: "عام" }
+    ];
+
+    // تنظيف البيانات والتأكد من عدم وجود undefined
+    let clients = rawClients.map(c => ({
+        name: c.name || "عميل بدون اسم",
+        type: c.type || "صيدلية",
+        rep: (c.rep && c.rep !== "undefined") ? c.rep : "عام"
+    }));
+    localStorage.setItem('my_clients', JSON.stringify(clients));
+
     let products = ["Irosky", "Pregna sky", "Ido sky", "Men sky", "Women sky", "D sky", "Calci sky"];
     let inventoryLogs = JSON.parse(localStorage.getItem('my_logs')) || [];
+
+    // ربط وتتبع المندوبين
+    let storedReps = JSON.parse(localStorage.getItem('all_reps')) || ["محمد الزاوي", "محمد العريبي", "عام"];
+
+    window.onload = function() {
+        const savedName = localStorage.getItem('remember_name');
+        const savedPass = localStorage.getItem('remember_pass');
+        if (savedName) {
+            document.getElementById('login-name').value = savedName;
+            document.getElementById('login-pass').value = savedPass || '';
+            document.getElementById('remember-me-check').checked = true;
+        }
+    };
+
+    function registerRep(repName) {
+        if (repName && repName !== "undefined" && !storedReps.includes(repName)) {
+            storedReps.push(repName);
+            localStorage.setItem('all_reps', JSON.stringify(storedReps));
+        }
+    }
 
     function isAdmin() {
         const name = localStorage.getItem('currentUser') || '';
@@ -186,8 +242,21 @@
 
     function login() {
         const name = document.getElementById('login-name').value.trim();
+        const pass = document.getElementById('login-pass').value;
+        const rememberMe = document.getElementById('remember-me-check').checked;
+
         if(name) {
             localStorage.setItem('currentUser', name);
+            registerRep(name);
+
+            if (rememberMe) {
+                localStorage.setItem('remember_name', name);
+                localStorage.setItem('remember_pass', pass);
+            } else {
+                localStorage.removeItem('remember_name');
+                localStorage.removeItem('remember_pass');
+            }
+
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('home-screen').classList.remove('hidden');
             document.getElementById('welcome-msg').innerText = "مرحباً " + name;
@@ -205,9 +274,9 @@
     }
 
     function addClient() {
-        const name = document.getElementById('new-client-name').value;
+        const name = document.getElementById('new-client-name').value.trim();
         const type = document.getElementById('new-client-type').value;
-        const rep = localStorage.getItem('currentUser');
+        const rep = localStorage.getItem('currentUser') || "عام";
         
         if(name) {
             clients.push({name, type, rep});
@@ -218,13 +287,27 @@
         }
     }
 
+    function toggleNewRepInput() {
+        const selected = document.getElementById('admin-select-rep').value;
+        const customInput = document.getElementById('admin-custom-rep-name');
+        if (selected === "NEW_REP") {
+            customInput.classList.remove('hidden');
+        } else {
+            customInput.classList.add('hidden');
+        }
+    }
+
     function addClientByAdmin() {
-        const rep = document.getElementById('admin-select-rep').value;
-        const name = document.getElementById('admin-client-name').value;
+        let selectedRep = document.getElementById('admin-select-rep').value;
+        if (selectedRep === "NEW_REP") {
+            selectedRep = document.getElementById('admin-custom-rep-name').value.trim();
+        }
+
+        const name = document.getElementById('admin-client-name').value.trim();
         const type = document.getElementById('admin-client-type').value;
 
-        if(!rep) {
-            alert("يرجى اختيار مندوب أولاً!");
+        if(!selectedRep || selectedRep === "undefined") {
+            alert("يرجى اختيار أو كتابة اسم المندوب!");
             return;
         }
         if(!name) {
@@ -232,10 +315,12 @@
             return;
         }
 
-        clients.push({name, type, rep});
+        registerRep(selectedRep);
+        clients.push({name, type, rep: selectedRep});
         localStorage.setItem('my_clients', JSON.stringify(clients));
-        alert(`تمت إضافة العميل ${name} للمندوب ${rep} بنجاح!`);
+        alert(`تمت إضافة العميل ${name} للمندوب ${selectedRep} بنجاح!`);
         document.getElementById('admin-client-name').value = '';
+        document.getElementById('admin-custom-rep-name').value = '';
         openScreen('clients-list-screen');
     }
 
@@ -249,7 +334,7 @@
 
     function saveInventory() {
         const client = document.getElementById('inv-client-select').value;
-        const rep = localStorage.getItem('currentUser');
+        const rep = localStorage.getItem('currentUser') || "عام";
         let details = [];
 
         products.forEach((p, idx) => {
@@ -288,13 +373,15 @@
         document.querySelectorAll('.phone-container > div').forEach(d => d.classList.add('hidden'));
         document.getElementById(id).classList.remove('hidden');
         
-        const currentRep = localStorage.getItem('currentUser');
+        const currentRep = localStorage.getItem('currentUser') || "عام";
 
         if(id === 'inventory-screen') {
-            const myClients = clients.filter(c => c.rep === currentRep);
-            document.getElementById('inv-client-select').innerHTML = myClients.length ? 
-                myClients.map(c => `<option value="${c.name}">${c.name} (${c.type})</option>`).join('') :
-                '<option value="">لا يوجد عملاء مضافين لك</option>';
+            let availableClients = clients.filter(c => c.rep === currentRep || c.rep === "عام");
+            if (availableClients.length === 0) availableClients = clients;
+
+            document.getElementById('inv-client-select').innerHTML = availableClients.length ? 
+                availableClients.map(c => `<option value="${c.name}">${c.name} (${c.type})</option>`).join('') :
+                '<option value="">لا يوجد عملاء مضافين</option>';
 
             document.getElementById('products-qty-list').innerHTML = products.map((p, idx) => `
                 <div class="item-row">
@@ -308,18 +395,23 @@
             if(isAdmin()) {
                 document.getElementById('admin-add-client-section').classList.remove('hidden');
                 
-                // قائمة المندوبين
-                let repsList = [...new Set(inventoryLogs.map(l => l.rep).concat(clients.map(c => c.rep)))];
-                if(repsList.length === 0) repsList = [currentRep];
-                document.getElementById('admin-select-rep').innerHTML = repsList.map(r => `<option value="${r}">${r}</option>`).join('');
+                // جمع كافة المندوبين من السجلات المحفوظة
+                let allRepsSet = new Set([...storedReps, ...clients.map(c => c.rep), ...inventoryLogs.map(l => l.rep)]);
+                allRepsSet.delete("undefined");
+                allRepsSet.delete(null);
 
-                // عرض جميع العملاء مع إمكانية الحذف
+                let repOptionsHtml = Array.from(allRepsSet).map(r => `<option value="${r}">${r}</option>`).join('');
+                repOptionsHtml += `<option value="NEW_REP">+ إضافة مندوب جديد</option>`;
+                
+                document.getElementById('admin-select-rep').innerHTML = repOptionsHtml;
+                toggleNewRepInput();
+
                 document.getElementById('clients-display-list').innerHTML = clients.length ?
                     clients.map((c, index) => `
                         <div class="card">
                             <div>
                                 <strong>${c.name}</strong> <small style="color:var(--accent-blue)">(${c.type})</small>
-                                <br><small style="color:gray;">المندوب: ${c.rep}</small>
+                                <br><small style="color:gray;">المندوب: ${c.rep || 'عام'}</small>
                             </div>
                             <button class="delete-btn" onclick="deleteClient(${index})"><i class="fa-solid fa-trash"></i> حذف</button>
                         </div>
@@ -327,7 +419,7 @@
                     '<p style="text-align:center; color:gray; margin-top:20px;">لا يوجد عملاء مسجلين</p>';
             } else {
                 document.getElementById('admin-add-client-section').classList.add('hidden');
-                const myClients = clients.filter(c => c.rep === currentRep);
+                const myClients = clients.filter(c => c.rep === currentRep || c.rep === "عام");
                 document.getElementById('clients-display-list').innerHTML = myClients.length ? 
                     myClients.map(c => `<div class="card"><span>${c.name}</span><small style="color:var(--accent-blue)">(${c.type})</small></div>`).join('') :
                     '<p style="text-align:center; color:gray; margin-top:20px;">لا يوجد عملاء مسجلين باسمك</p>';
@@ -336,10 +428,10 @@
 
         if(id === 'visits-screen') {
             if(isAdmin()) {
-                // للأدمن: عرض إحصائيات أعداد الجرد لكل مندوب
                 let counts = {};
                 inventoryLogs.forEach(l => {
-                    counts[l.rep] = (counts[l.rep] || 0) + 1;
+                    let repName = (l.rep && l.rep !== "undefined") ? l.rep : "عام";
+                    counts[repName] = (counts[repName] || 0) + 1;
                 });
 
                 let html = '<div style="margin-bottom:10px; font-weight:bold;">عدد عمليات الجرد لكل مندوب:</div>';
@@ -358,7 +450,6 @@
                 }
                 document.getElementById('visits-list').innerHTML = html;
             } else {
-                // للمندوب: عرض سجل زياراته وتفاصيلها
                 const myLogs = inventoryLogs.filter(l => l.rep === currentRep);
                 document.getElementById('visits-list').innerHTML = myLogs.length ? 
                     myLogs.map(l => `
@@ -375,7 +466,7 @@
         }
 
         if(id === 'report-screen') {
-            const repsList = [...new Set(inventoryLogs.map(l => l.rep))];
+            const repsList = [...new Set(inventoryLogs.map(l => (l.rep && l.rep !== "undefined") ? l.rep : "عام"))];
             let repOptions = '<option value="ALL">جميع المندوبين</option>';
             repsList.forEach(r => { repOptions += `<option value="${r}">${r}</option>`; });
             document.getElementById('filter-rep-select').innerHTML = repOptions;
@@ -391,7 +482,7 @@
         let filtered = inventoryLogs;
 
         if (selectedRep !== 'ALL') {
-            filtered = filtered.filter(l => l.rep === selectedRep);
+            filtered = filtered.filter(l => (l.rep || "عام") === selectedRep);
         }
 
         if (selectedDate) {
@@ -406,7 +497,7 @@
                         <strong>${l.client}</strong>
                         <small style="color:gray; direction:ltr; display:inline-block;">${l.displayDate || l.date}</small>
                     </div>
-                    <small style="color:var(--accent-blue); font-weight:bold;">المندوب: ${l.rep}</small>
+                    <small style="color:var(--accent-blue); font-weight:bold;">المندوب: ${l.rep || 'عام'}</small>
                     <div style="margin-top:5px; font-size:13px; color:#333; direction:ltr; text-align:right;">${l.details}</div>
                 </div>
             `).join('');
