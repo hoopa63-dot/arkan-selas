@@ -1,247 +1,47 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>شركة أركان الدوائية</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root { --primary-bg: #e1f5fe; --accent-blue: #0288d1; }
-        * { box-sizing: border-box; font-family: 'Cairo', sans-serif; margin: 0; padding: 0; }
-        body { background-color: var(--primary-bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 10px; }
-        .phone-container { width: 100%; max-width: 380px; background: #ffffff; border-radius: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); padding: 20px; min-height: 600px; position: relative; }
-        .hidden { display: none !important; }
-        input, select, button { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; text-align: right; }
-        input[type="date"] { direction: ltr !important; text-align: right !important; }
-        .primary-btn { background: var(--accent-blue); color: white; border: none; font-weight: bold; cursor: pointer; text-align: center; }
-        .back-btn { background: #6c757d; color: white; border: none; text-align: center; }
-        .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .grid-item { background: #f8f9fa; padding: 15px; border-radius: 12px; text-align: center; cursor: pointer; border: 1px solid #eee; }
-        .card { background: #fff; border: 1px solid #eee; padding: 10px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-        .item-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; background: #f9f9f9; padding: 8px; border-radius: 8px; }
-        .item-row input { width: 90px; margin-bottom: 0; text-align: center; }
-        .company-header { text-align: center; margin-top: 15px; margin-bottom: 25px; }
-        .company-header h2 { color: var(--accent-blue); font-size: 22px; font-weight: bold; }
-        .loading { text-align: center; color: var(--accent-blue); font-weight: bold; margin-bottom: 15px; }
-    </style>
-</head>
-<body>
-
-<div class="phone-container">
-    <!-- Login Screen -->
-    <div id="login-screen">
-        <div class="company-header">
-            <i class="fa-solid fa-hospital-user" style="font-size: 40px; color: var(--accent-blue); margin-bottom: 8px;"></i>
-            <h2>شركة أركان الدوائية</h2>
-            <p>تسجيل الدخول</p>
-        </div>
-        <input type="text" id="login-name" placeholder="اسم المندوب">
-        <button class="primary-btn" onclick="login()">دخول</button>
-    </div>
-
-    <!-- Home Screen -->
-    <div id="home-screen" class="hidden">
-        <h3 id="welcome-msg" style="text-align:center; margin-bottom: 10px;"></h3>
-        <div id="loading-msg" class="loading hidden"><i class="fa-solid fa-spinner fa-spin"></i> جاري مزامنة البيانات السحابية...</div>
-        <div class="grid-container">
-            <div class="grid-item" onclick="openScreen('clients-list-screen')"><i class="fa-solid fa-users"></i><br>العملاء</div>
-            <div class="grid-item" id="user-add-client-btn" onclick="openScreen('add-client-screen')"><i class="fa-solid fa-user-plus"></i><br>إضافة عميل</div>
-            <div class="grid-item" onclick="openScreen('visits-screen')"><i class="fa-solid fa-clipboard-list"></i><br>سجل الزيارات</div>
-            <div class="grid-item" id="user-inventory-btn" onclick="openScreen('inventory-screen')"><i class="fa-solid fa-boxes-stacked"></i><br>جرد جديد</div>
-        </div>
-        <button class="back-btn" style="margin-top:20px;" onclick="location.reload()">تحديث / خروج</button>
-    </div>
-
-    <!-- Add Client Screen -->
-    <div id="add-client-screen" class="hidden">
-        <h3>إضافة عميل جديد</h3>
-        <input type="text" id="new-client-name" placeholder="اسم العميل">
-        <select id="new-client-type">
-            <option value="صيدلية">صيدلية</option>
-            <option value="شركة">شركة</option>
-            <option value="عيادة">عيادة</option>
-        </select>
-        <button class="primary-btn" onclick="addClient()">حفظ العميل</button>
-        <button class="back-btn" onclick="goHome()">رجوع</button>
-    </div>
-
-    <!-- Clients List Screen -->
-    <div id="clients-list-screen" class="hidden">
-        <h3>إدارة العملاء</h3>
-        <div id="clients-display-list" style="max-height: 350px; overflow-y: auto;"></div>
-        <button class="back-btn" style="margin-top:10px;" onclick="goHome()">رجوع</button>
-    </div>
-
-    <!-- Inventory Screen -->
-    <div id="inventory-screen" class="hidden">
-        <h3>تسجيل جرد جديد</h3>
-        <label style="font-size:12px; font-weight:bold;">اختر العميل:</label>
-        <select id="inv-client-select"></select>
-
-        <label style="font-size:12px; font-weight:bold; margin-top:5px; display:block;">أدخل الكميات:</label>
-        <div id="products-qty-list" style="max-height: 280px; overflow-y: auto; margin-bottom: 10px;"></div>
-
-        <button class="primary-btn" onclick="saveInventory()">حفظ الجرد</button>
-        <button class="back-btn" onclick="goHome()">رجوع</button>
-    </div>
-
-    <!-- Visits Log Screen -->
-    <div id="visits-screen" class="hidden">
-        <h3>سجل الزيارات والجرد</h3>
-        <div id="visits-list"></div>
-        <button class="back-btn" style="margin-top:10px;" onclick="goHome()">رجوع</button>
-    </div>
-</div>
-
-<script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwRXBf4TD27BgxeqevNUSunfd9rHlhEPRWKA6hVyGaPX5rPfIMDOt_CcRhDNx5T6DvT/exec";
-
-    let clients = [];
-    let inventoryLogs = [];
-    let products = ["Irosky", "Pregna sky", "Ido sky", "Men sky", "Women sky", "D sky", "Calci sky"];
-
-    function isAdmin() {
-        const name = localStorage.getItem('currentUser') || '';
-        return name === "ايهاب العريبي" || name === "إيهاب العريبي";
+function doGet(e) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var clientsSheet = ss.getSheetByName("Clients");
+  var logsSheet = ss.getSheetByName("Logs");
+  
+  var clientsData = clientsSheet ? clientsSheet.getDataRange().getValues() : [];
+  var logsData = logsSheet ? logsSheet.getDataRange().getValues() : [];
+  
+  var clients = [];
+  for(var i = 1; i < clientsData.length; i++) {
+    if(clientsData[i][0]) {
+      clients.push({ name: clientsData[i][0], type: clientsData[i][1], rep: clientsData[i][2] });
     }
-
-    function login() {
-        const name = document.getElementById('login-name').value.trim();
-        if(name) {
-            localStorage.setItem('currentUser', name);
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('home-screen').classList.remove('hidden');
-            document.getElementById('welcome-msg').innerText = "مرحباً " + name;
-            syncData();
-        }
+  }
+  
+  var logs = [];
+  for(var j = 1; j < logsData.length; j++) {
+    if(logsData[j][0]) {
+      logs.push({ 
+        client: logsData[j][0], 
+        rep: logsData[j][1], 
+        details: logsData[j][2], 
+        isoDate: logsData[j][3], 
+        displayDate: logsData[j][4] 
+      });
     }
+  }
+  
+  return ContentService.createTextOutput(JSON.stringify({ clients: clients, logs: logs }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
 
-    function syncData() {
-        document.getElementById('loading-msg').classList.remove('hidden');
-        fetch(SCRIPT_URL)
-            .then(res => res.json())
-            .then(data => {
-                clients = data.clients || [];
-                inventoryLogs = data.logs || [];
-                document.getElementById('loading-msg').classList.add('hidden');
-            })
-            .catch(() => {
-                alert("حدث خطأ في مزامنة البيانات من السحابة");
-                document.getElementById('loading-msg').classList.add('hidden');
-            });
-    }
-
-    function addClient() {
-        const name = document.getElementById('new-client-name').value.trim();
-        const type = document.getElementById('new-client-type').value;
-        const rep = localStorage.getItem('currentUser') || "عام";
-        
-        if(!name) return alert("يرجى إدخال اسم العميل");
-
-        const clientData = { name, type, rep };
-
-        fetch(SCRIPT_URL, {
-            method: 'POST',
-            body: JSON.stringify({ action: "addClient", client: clientData })
-        })
-        .then(() => {
-            alert("تم حفظ العميل في السحابة بنجاح!");
-            clients.push(clientData);
-            document.getElementById('new-client-name').value = '';
-            goHome();
-        });
-    }
-
-    function saveInventory() {
-        const client = document.getElementById('inv-client-select').value;
-        const rep = localStorage.getItem('currentUser') || "عام";
-        let details = [];
-
-        products.forEach((p, idx) => {
-            let qty = document.getElementById(`prod-qty-${idx}`).value || 0;
-            if(qty > 0) details.push(`${p}: ${qty}`);
-        });
-
-        if(!client) return alert("يرجى اختيار عميل!");
-
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        const isoDate = `${year}-${month}-${day}`; 
-        const timeStr = now.toLocaleTimeString('en-GB', {hour: '2-digit', minute:'2-digit'});
-
-        const logData = {
-            client, rep, 
-            details: details.join(' | ') || "لا يوجد كميات", 
-            isoDate, 
-            displayDate: `${year}/${month}/${day} ${timeStr}`
-        };
-
-        fetch(SCRIPT_URL, {
-            method: 'POST',
-            body: JSON.stringify({ action: "saveInventory", log: logData })
-        })
-        .then(() => {
-            alert("تم إرسال الجرد سحابياً بنجاح!");
-            inventoryLogs.push(logData);
-            goHome();
-        });
-    }
-
-    function openScreen(id) {
-        document.querySelectorAll('.phone-container > div').forEach(d => d.classList.add('hidden'));
-        document.getElementById(id).classList.remove('hidden');
-        const currentRep = localStorage.getItem('currentUser') || "عام";
-
-        if(id === 'inventory-screen') {
-            let availableClients = clients.filter(c => c.rep === currentRep || c.rep === "عام" || isAdmin());
-            document.getElementById('inv-client-select').innerHTML = availableClients.length ? 
-                availableClients.map(c => `<option value="${c.name}">${c.name} (${c.type})</option>`).join('') :
-                '<option value="">لا يوجد عملاء مضافين</option>';
-
-            document.getElementById('products-qty-list').innerHTML = products.map((p, idx) => `
-                <div class="item-row">
-                    <span style="font-weight:bold; font-size:14px; dir:ltr;">${p}</span>
-                    <input type="number" id="prod-qty-${idx}" placeholder="0" min="0">
-                </div>
-            `).join('');
-        }
-
-        if(id === 'clients-list-screen') {
-            let displayList = isAdmin() ? clients : clients.filter(c => c.rep === currentRep || c.rep === "عام");
-            document.getElementById('clients-display-list').innerHTML = displayList.length ?
-                displayList.map(c => `
-                    <div class="card">
-                        <div>
-                            <strong>${c.name}</strong> <small style="color:var(--accent-blue)">(${c.type})</small>
-                            <br><small style="color:gray;">المندوب: ${c.rep}</small>
-                        </div>
-                    </div>
-                `).join('') : '<p style="text-align:center; color:gray; margin-top:20px;">لا يوجد عملاء</p>';
-        }
-
-        if(id === 'visits-screen') {
-            let displayLogs = isAdmin() ? inventoryLogs : inventoryLogs.filter(l => l.rep === currentRep);
-            document.getElementById('visits-list').innerHTML = displayLogs.length ? 
-                displayLogs.map(l => `
-                    <div class="card" style="flex-direction:column; align-items:flex-start;">
-                        <div style="display:flex; justify-content:space-between; width:100%;">
-                            <strong>${l.client}</strong>
-                            <small style="color:gray;">${l.displayDate}</small>
-                        </div>
-                        <small style="color:var(--accent-blue);">المندوب: ${l.rep}</small>
-                        <div style="margin-top:5px; font-size:13px; text-align:right;">${l.details}</div>
-                    </div>
-                `).join('') : '<p style="text-align:center; color:gray; margin-top:20px;">لا يوجد سجلات</p>';
-        }
-    }
-
-    function goHome() {
-        document.querySelectorAll('.phone-container > div').forEach(d => d.classList.add('hidden'));
-        document.getElementById('home-screen').classList.remove('hidden');
-    }
-</script>
-</body>
-</html>
+function doPost(e) {
+  var data = JSON.parse(e.postData.contents);
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  
+  if(data.action === "addClient") {
+    var sheet = ss.getSheetByName("Clients");
+    sheet.appendRow([data.client.name, data.client.type, data.client.rep]);
+  } else if(data.action === "saveInventory") {
+    var sheet = ss.getSheetByName("Logs");
+    sheet.appendRow([data.log.client, data.log.rep, data.log.details, data.log.isoDate, data.log.displayDate]);
+  }
+  
+  return ContentService.createTextOutput(JSON.stringify({ result: "success" }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
